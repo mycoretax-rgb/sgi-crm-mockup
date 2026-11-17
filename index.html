@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mockup CRM SGI — Alur Baru (Simpel)</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas-pro@1.5.8/dist/html2canvas-pro.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <style>
     :root {
       --navy: #0B192C;
@@ -29,6 +31,18 @@
       border-radius: 9999px;
       margin-right: 6px;
       background: currentColor;
+    }
+    @media print {
+      body * { visibility: hidden !important; }
+      #invoicePrintArea, #invoicePrintArea * { visibility: visible !important; }
+      #invoicePrintArea {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+      }
     }
   </style>
 </head>
@@ -84,8 +98,8 @@
   <div id="toast" class="fixed bottom-4 right-4 z-50 hidden bg-[#0B192C] text-white text-sm px-4 py-2.5 rounded-lg shadow-lg border border-[#D4AF37]/40"></div>
 
   <!-- Modal Tambah Klien -->
-  <div id="clientModal" class="fixed inset-0 z-40 hidden bg-black/50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl max-w-lg w-full shadow-xl overflow-hidden">
+  <div id="clientModal" class="fixed inset-0 z-40 hidden bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-xl max-w-lg w-full shadow-xl overflow-hidden my-auto">
       <div class="px-5 py-3.5 bg-[#0B192C] text-white flex items-center justify-between">
         <h3 class="font-bold text-sm">Input Klien Baru (Dari CS)</h3>
         <button onclick="closeModal('clientModal')" class="text-slate-300 hover:text-white text-lg leading-none">&times;</button>
@@ -112,14 +126,7 @@
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Brand *</label>
-            <select id="cBrand" required class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white">
-              <option value="Summitech Global Indo">Summitech Global Indo</option>
-              <option value="SGI Indonesia">SGI Indonesia</option>
-              <option value="Legal Express Indonesia">Legal Express Indonesia</option>
-              <option value="Legalio Business Partners">Legalio Business Partners</option>
-              <option value="Legalitas Pro">Legalitas Pro</option>
-              <option value="Akura Mokoo Indonesia">Akura Mokoo Indonesia</option>
-            </select>
+            <select id="cBrand" required class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"></select>
           </div>
         </div>
 
@@ -131,19 +138,11 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Jenis Layanan *</label>
-            <select id="cService" onchange="suggestPrice()" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white">
-              <option value="PT Perseroan">PT Perseroan</option>
-              <option value="CV">CV</option>
-              <option value="Yayasan">Yayasan</option>
-              <option value="NPWP Badan">NPWP Badan</option>
-              <option value="NPWP Perorangan">NPWP Perorangan</option>
-              <option value="NIB Badan">NIB Badan</option>
-              <option value="Virtual Office">Virtual Office</option>
-            </select>
+            <select id="cService" onchange="suggestPrice()" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"></select>
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Harga Layanan (Rp) *</label>
-            <input id="cPrice" type="number" min="0" required class="w-full border border-slate-300 rounded-lg px-3 py-2 tabular" placeholder="6500000" />
+            <input id="cPrice" type="number" min="0" required class="w-full border border-slate-300 rounded-lg px-3 py-2 tabular" placeholder="3500000" />
           </div>
         </div>
 
@@ -158,16 +157,119 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Catatan (opsional)</label>
-            <input id="cNotes" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="Mis. Janji bayar Jumat" />
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Kota / Alamat Klien (opsional)</label>
+            <input id="cCity" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="Mis. Tangerang / Jakarta" />
           </div>
         </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Catatan (opsional)</label>
+          <input id="cNotes" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="Mis. Janji bayar Jumat" />
+        </div>
+
+        <label class="flex items-center gap-2 text-xs text-slate-700 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200 cursor-pointer">
+          <input id="cNoInvoice" type="checkbox" class="rounded border-slate-300" />
+          <span><strong>Tidak pakai invoice</strong> (untuk jasa tertentu yang tidak perlu diterbitkan invoice)</span>
+        </label>
 
         <div class="pt-2 flex justify-end gap-2">
           <button type="button" onclick="closeModal('clientModal')" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Batal</button>
           <button type="submit" class="px-4 py-2 rounded-lg bg-[#0B192C] text-white font-semibold hover:opacity-95">Simpan Klien</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal Buat / Edit Invoice (Based on CRM V2) -->
+  <div id="invoiceFormModal" class="fixed inset-0 z-40 hidden bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-xl max-w-2xl w-full shadow-xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+      <div class="px-5 py-3.5 bg-[#0B192C] text-white flex items-center justify-between shrink-0">
+        <h3 class="font-bold text-sm">Detail Invoice (Pengirim, Alamat Brand &amp; Tagihan)</h3>
+        <button onclick="closeModal('invoiceFormModal')" class="text-slate-300 hover:text-white text-lg leading-none">&times;</button>
+      </div>
+      <form onsubmit="saveInvoiceForm(event)" class="p-5 space-y-4 text-sm overflow-y-auto">
+        <input type="hidden" id="invClientId" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">No. Invoice *</label>
+            <input id="invNo" required class="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono text-xs" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Invoice</label>
+            <input id="invDate" type="date" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Jatuh Tempo</label>
+            <input id="invDueDate" type="date" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs" />
+          </div>
+        </div>
+
+        <!-- Pengirim & Brand -->
+        <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200 space-y-3">
+          <div class="text-xs font-bold text-[#0B192C] uppercase">Identitas Pengirim &amp; Brand</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Perusahaan Pengirim *</label>
+              <select id="invSenderCompany" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-xs"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">No. Telp / Hotline Brand *</label>
+              <select id="invSenderPhone" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-xs"></select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Alamat Brand / Kantor Pengirim *</label>
+            <select id="invSenderAddress" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-xs"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Rekening Pembayaran *</label>
+            <select id="invBankInfo" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-xs"></select>
+          </div>
+        </div>
+
+        <!-- Rincian Layanan -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Deskripsi Layanan *</label>
+            <input id="invItemTitle" required class="w-full border border-slate-300 rounded-lg px-3 py-2" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Total Tagihan (Rp) *</label>
+            <input id="invPrice" type="number" min="0" required class="w-full border border-slate-300 rounded-lg px-3 py-2 tabular" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Rincian Pekerjaan (tampil di PDF)</label>
+          <textarea id="invItemDetails" rows="2" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs"></textarea>
+        </div>
+
+        <div class="pt-2 flex flex-wrap justify-end gap-2">
+          <button type="button" onclick="closeModal('invoiceFormModal')" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700">Batal</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-[#0B192C] text-white font-semibold">Simpan &amp; Pratinjau PDF</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Pratinjau & Download PDF Invoice -->
+  <div id="invoicePreviewModal" class="fixed inset-0 z-50 hidden bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-slate-100 rounded-xl max-w-3xl w-full shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col">
+      <div class="px-5 py-3 bg-[#0B192C] text-white flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <h3 class="font-bold text-sm">Pratinjau Invoice (Siap Download PDF)</h3>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="downloadInvoicePDF()" id="btnDownloadPdf" class="px-3 py-1.5 rounded-lg bg-[#D4AF37] text-[#0B192C] text-xs font-bold hover:opacity-90">
+            Download PDF
+          </button>
+          <button type="button" onclick="window.print()" class="px-3 py-1.5 rounded-lg bg-white/15 text-white text-xs font-semibold hover:bg-white/25">
+            Cetak
+          </button>
+          <button onclick="closeModal('invoicePreviewModal')" class="text-slate-300 hover:text-white text-lg leading-none ml-2">&times;</button>
+        </div>
+      </div>
+      <div class="p-4 sm:p-6 overflow-y-auto">
+        <div id="invoicePrintArea" class="bg-white p-6 sm:p-8 rounded-lg shadow border border-slate-200 text-slate-800 space-y-6"></div>
+      </div>
     </div>
   </div>
 
@@ -239,14 +341,7 @@
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Sumber Brand *</label>
-          <select id="mBrand" required class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white">
-            <option value="Summitech Global Indo">Summitech Global Indo</option>
-            <option value="SGI Indonesia">SGI Indonesia</option>
-            <option value="Legal Express Indonesia">Legal Express Indonesia</option>
-            <option value="Legalio Business Partners">Legalio Business Partners</option>
-            <option value="Legalitas Pro">Legalitas Pro</option>
-            <option value="Akura Mokoo Indonesia">Akura Mokoo Indonesia</option>
-          </select>
+          <select id="mBrand" required class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"></select>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">No. WhatsApp</label>
@@ -261,7 +356,7 @@
   </div>
 
 <script>
-const STORAGE_KEY = 'sgi_crm_mockup_v3_r5';
+const STORAGE_KEY = 'sgi_crm_mockup_v3_r6';
 
 const BRANDS = [
   'Summitech Global Indo',
@@ -272,6 +367,74 @@ const BRANDS = [
   'Akura Mokoo Indonesia'
 ];
 
+const SENDER_COMPANIES = [
+  'PT SGI INDONESIA GRUP',
+  'PT SUMMITECH GLOBAL INDO'
+];
+
+const SENDER_ADDRESSES = [
+  'Ruko Aryana Karawaci Tipe Prima Blok G1 No. 15 Sukabakti Kec. Curug Kab. Tangerang Prov. Banten – 15810.',
+  'Summarecon Bekasi, Ruko Emerald UC9 Marga Mulya Kec. Bekasi Utara Kota Bekasi Jawa Barat - 17142.',
+  'Jl Bhayangkara Gg. Merak No 07 Gunung puyuh Kec. Gunung puyuh Kota Sukabumi Jawa Barat - 43123'
+];
+
+const BRAND_HOTLINE_MAP = {
+  'Summitech Global Indo': 'SM-087781333321',
+  'SGI Indonesia': 'SG-08118000535',
+  'Legal Express Indonesia': 'LX-087782999914',
+  'Legalio Business Partners': 'LB-085280003351',
+  'Legalitas Pro': 'LP-085280003321',
+  'Akura Mokoo Indonesia': 'VO-08211081903'
+};
+
+const HOTLINE_OPTIONS = [
+  'SG-08118000535',
+  'LX-087782999914',
+  'LP-085280003321',
+  'SM-087781333321',
+  'LB-085280003351',
+  'VO-08211081903'
+];
+
+const BANK_OPTIONS = [
+  'MANDIRI 118-00-1548595-5 a.n. PT SGI INDONESIA GRUP',
+  'MANDIRI 166-000-529-3642 a.n. PT SUMMITECH GLOBAL INDO',
+  'BCA 0381-66-9016 a.n. PT SUMMITECH GLOBAL INDO',
+  'BRI 0092-01-001670-566 a.n. PT SUMMITECH GLOBAL INDO'
+];
+
+// Daftar layanan lengkap sesuai CORPORATE_PRODUCTS di CRM V2
+const SERVICES = [
+  { name: 'PT Perseroan', price: 3500000, details: 'Pengecekan & Booking Nama PT • Akta Notaris • SK Kemenkumham (AHU) • NPWP Badan & SKT • NIB OSS-RBA' },
+  { name: 'PT PMA', price: 9000000, details: 'Akta Notaris & SK Kemenkumham PMA • Alur Izin Investasi BKPM / OSS-RBA • NPWP Badan PMA' },
+  { name: 'PT Perorangan', price: 1200000, details: 'Pernyataan Pendirian Kemenkumham • Sertifikat AHU • NPWP Badan Coretax • NIB Usaha Mikro' },
+  { name: 'CV', price: 2500000, details: 'Pengecekan Nama CV • Akta Notaris • SK Terdaftar AHU • NPWP Badan & SKT • NIB OSS-RBA' },
+  { name: 'Yayasan', price: 4000000, details: 'Akta Notaris Yayasan • SK Pengesahan AHU • NPWP Badan Yayasan • NIB Kegiatan Sosial' },
+  { name: 'Akta Penegasan (Notaril)', price: 1500000, details: 'Pembuatan Akta Penegasan Notaril & dokumen pendukung' },
+  { name: 'Perubahan Akta (only)', price: 2000000, details: 'Penyusunan Akta Perubahan di Notaris' },
+  { name: 'Perubahan Ahu dan Oss', price: 1500000, details: 'Update data perubahan pada sistem AHU & OSS-RBA' },
+  { name: 'Perubahan Akta dan Oss', price: 2500000, details: 'Akta Perubahan Notaris + SK AHU + Update OSS-RBA' },
+  { name: 'Rups', price: 1500000, details: 'Penyelenggaraan & Berita Acara RUPS' },
+  { name: 'SPT Tahunan Badan (nihil)', price: 500000, details: 'Pelaporan SPT Tahunan Pajak Badan (Nihil)' },
+  { name: 'SPT Tahunan Pribadi', price: 350000, details: 'Pelaporan SPT Tahunan Orang Pribadi' },
+  { name: 'Npwp Perorangan', price: 250000, details: 'Pendaftaran & Aktivasi NPWP Orang Pribadi via Coretax DJP' },
+  { name: 'Npwp Badan', price: 500000, details: 'Pendaftaran NPWP Badan + SKT + Akun Coretax DJP' },
+  { name: 'Aktivasi Npwp Badan', price: 350000, details: 'Aktivasi Akun Coretax & Cetak Kartu/SKT NPWP Badan' },
+  { name: 'Aktivasi Npwp Pribadi', price: 250000, details: 'Aktivasi NIK-NPWP & Akun Coretax Orang Pribadi' },
+  { name: 'Nib Perorangan', price: 350000, details: 'Penerbitan NIB OSS-RBA Usaha Perorangan' },
+  { name: 'Nib Badan', price: 500000, details: 'Penerbitan NIB OSS-RBA & Sertifikat Standar Badan Usaha' },
+  { name: 'Pembuatan Izin PIRT', price: 750000, details: 'Pengurusan Sertifikat Produksi Pangan Industri Rumah Tangga (PIRT)' },
+  { name: 'Pkkpr', price: 1000000, details: 'Pengurusan Persetujuan Kesesuaian Kegiatan Pemanfaatan Ruang (PKKPR)' },
+  { name: 'SBU I SKK I KTA', price: 3500000, details: 'Pengurusan Sertifikat Badan Usaha / SKK / KTA' },
+  { name: 'Company Profile', price: 1500000, details: 'Pembuatan Dokumen Company Profile Profesional' },
+  { name: 'Slik Ojk', price: 500000, details: 'Pendampingan Pengecekan SLIK OJK' },
+  { name: 'ISO', price: 7500000, details: 'Pendampingan Sertifikasi ISO' },
+  { name: 'PSE', price: 1500000, details: 'Pendaftaran Penyelenggara Sistem Elektronik (PSE) Komdigi' },
+  { name: 'Layanan Virtual Office', price: 2500000, details: 'Alamat Kantor Virtual • Surat Keterangan Domisili • Layanan Resepsionis & Mail Handling' },
+  { name: 'Sewa Ruang Meeting', price: 150000, details: 'Penggunaan Ruang Meeting Representatif + WiFi & Smart TV' },
+  { name: 'Dll', price: 0, details: 'Layanan legalitas / perizinan lainnya' }
+];
+
 const DEFAULT_DATA = {
   tab: 'dashboard',
   mitras: [
@@ -279,16 +442,16 @@ const DEFAULT_DATA = {
     { id: 'MITRA-002', name: 'Notaris Rina Partner', brand: 'Summitech Global Indo', phone: '08138000222' }
   ],
   clients: [
-    { id: 'ORD-01', name: 'PT Nusantara Sejahtera (Contoh)', phone: '081211112222', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'PT Perseroan', price: 6500000, paid: 6500000, evidence: 'bukti_tf_01.jpg', workStatus: 'Selesai', invoiceNo: 'INV-202611-001', notes: 'Lunas via BCA' },
-    { id: 'ORD-02', name: 'PT Karya Mandiri (Contoh)', phone: '081233334444', source: 'Mitra', brand: 'SGI Indonesia', mitraId: 'MITRA-001', service: 'PT Perseroan', price: 6500000, paid: 3000000, evidence: 'bukti_dp_02.jpg', workStatus: 'On Proses', invoiceNo: 'INV-202611-002', notes: 'Sudah DP 3jt, sisa 3,5jt saat selesai' },
-    { id: 'ORD-03', name: 'CV Berkah Abadi (Contoh)', phone: '081255556666', source: 'Iklan', brand: 'Legal Express Indonesia', mitraId: '', service: 'CV', price: 4000000, paid: 2000000, evidence: 'bukti_dp_03.jpg', workStatus: 'Selesai', invoiceNo: 'INV-202611-003', notes: 'Kerjaan beres, tinggal tagih pelunasan' },
-    { id: 'ORD-04', name: 'Andi Wijaya (Contoh)', phone: '081277778888', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'NPWP Perorangan', price: 500000, paid: 0, evidence: '', workStatus: 'Selesai', invoiceNo: 'INV-202611-004', notes: 'NPWP jadi, klien susah dihubungi!' },
-    { id: 'ORD-05', name: 'Toko Sinar Baru (Contoh)', phone: '081299990000', source: 'Iklan', brand: 'Legal Express Indonesia', mitraId: '', service: 'NIB Badan', price: 750000, paid: 0, evidence: '', workStatus: 'Selesai', invoiceNo: 'INV-202611-005', notes: 'NIB terbit, belum transfer' },
-    { id: 'ORD-06', name: 'Yayasan Harapan Bangsa (Contoh)', phone: '081312123434', source: 'Mitra', brand: 'Summitech Global Indo', mitraId: 'MITRA-002', service: 'Yayasan', price: 5000000, paid: 5000000, evidence: 'bukti_tf_06.jpg', workStatus: 'Selesai', invoiceNo: 'INV-202611-006', notes: 'Lunas' },
-    { id: 'ORD-07', name: 'Rudi Hartono (Contoh)', phone: '081345456767', source: 'Iklan', brand: 'SGI Indonesia', mitraId: '', service: 'NPWP Badan', price: 750000, paid: 750000, evidence: 'bukti_tf_07.jpg', workStatus: 'Selesai', invoiceNo: 'INV-202611-007', notes: 'Langsung lunas' },
-    { id: 'ORD-08', name: 'Calon Klien A (Contoh)', phone: '081389891010', source: 'Iklan', brand: 'Legalio Business Partners', mitraId: '', service: 'PT Perseroan', price: 6500000, paid: 0, evidence: '', workStatus: 'Prospek', invoiceNo: '', notes: 'Baru tanya-tanya di WA' },
-    { id: 'ORD-09', name: 'Calon Klien B (Contoh)', phone: '081311223344', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'NIB Badan', price: 750000, paid: 0, evidence: '', workStatus: 'Prospek', invoiceNo: '', notes: 'Belum isi template CS' },
-    { id: 'ORD-10', name: 'Calon Klien C (Contoh)', phone: '081355667788', source: 'Mitra', brand: 'Akura Mokoo Indonesia', mitraId: 'MITRA-001', service: 'Virtual Office', price: 3500000, paid: 3500000, evidence: 'bukti_tf_10.jpg', workStatus: 'Selesai', invoiceNo: 'INV-202611-010', notes: 'Lunas 1 tahun' }
+    { id: 'ORD-01', name: 'PT Nusantara Sejahtera (Contoh)', phone: '081211112222', city: 'Tangerang', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'PT Perseroan', price: 3500000, paid: 3500000, evidence: 'bukti_tf_01.jpg', workStatus: 'Selesai', invoiceNo: 'INV-LP-202611-001', notes: 'Lunas via BCA', invMeta: null },
+    { id: 'ORD-02', name: 'PT Karya Mandiri (Contoh)', phone: '081233334444', city: 'Jakarta', source: 'Mitra', brand: 'SGI Indonesia', mitraId: 'MITRA-001', service: 'PT Perseroan', price: 3500000, paid: 2000000, evidence: 'bukti_dp_02.jpg', workStatus: 'On Proses', invoiceNo: 'INV-SG-202611-002', notes: 'Sudah DP 2jt, sisa 1,5jt saat selesai', invMeta: null },
+    { id: 'ORD-03', name: 'CV Berkah Abadi (Contoh)', phone: '081255556666', city: 'Bekasi', source: 'Iklan', brand: 'Legal Express Indonesia', mitraId: '', service: 'CV', price: 2500000, paid: 1000000, evidence: 'bukti_dp_03.jpg', workStatus: 'Selesai', invoiceNo: 'INV-LX-202611-003', notes: 'Kerjaan beres, tinggal tagih pelunasan', invMeta: null },
+    { id: 'ORD-04', name: 'Andi Wijaya (Contoh)', phone: '081277778888', city: 'Tangerang', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'Npwp Perorangan', price: 250000, paid: 0, evidence: '', workStatus: 'Selesai', invoiceNo: 'INV-LP-202611-004', notes: 'NPWP jadi, klien susah dihubungi!', invMeta: null },
+    { id: 'ORD-05', name: 'Toko Sinar Baru (Contoh)', phone: '081299990000', city: 'Sukabumi', source: 'Iklan', brand: 'Legal Express Indonesia', mitraId: '', service: 'Nib Badan', price: 500000, paid: 0, evidence: '', workStatus: 'Selesai', invoiceNo: 'INV-LX-202611-005', notes: 'NIB terbit, belum transfer', invMeta: null },
+    { id: 'ORD-06', name: 'Yayasan Harapan Bangsa (Contoh)', phone: '081312123434', city: 'Jakarta', source: 'Mitra', brand: 'Summitech Global Indo', mitraId: 'MITRA-002', service: 'Yayasan', price: 4000000, paid: 4000000, evidence: 'bukti_tf_06.jpg', workStatus: 'Selesai', invoiceNo: 'INV-SM-202611-006', notes: 'Lunas', invMeta: null },
+    { id: 'ORD-07', name: 'Rudi Hartono (Contoh)', phone: '081345456767', city: 'Tangerang', source: 'Iklan', brand: 'SGI Indonesia', mitraId: '', service: 'Npwp Badan', price: 500000, paid: 500000, evidence: 'bukti_tf_07.jpg', workStatus: 'Selesai', invoiceNo: 'INV-SG-202611-007', notes: 'Langsung lunas', invMeta: null },
+    { id: 'ORD-08', name: 'Calon Klien A (Contoh)', phone: '081389891010', city: 'Jakarta', source: 'Iklan', brand: 'Legalio Business Partners', mitraId: '', service: 'PT Perseroan', price: 3500000, paid: 0, evidence: '', workStatus: 'Prospek', invoiceNo: '', notes: 'Baru tanya-tanya di WA', invMeta: null },
+    { id: 'ORD-09', name: 'Calon Klien B (Contoh)', phone: '081311223344', city: 'Bekasi', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'Nib Badan', price: 500000, paid: 0, evidence: '', workStatus: 'Prospek', invoiceNo: '', notes: 'Belum isi template CS', invMeta: null },
+    { id: 'ORD-10', name: 'Calon Klien C (Contoh)', phone: '081355667788', city: 'Tangerang', source: 'Mitra', brand: 'Akura Mokoo Indonesia', mitraId: 'MITRA-001', service: 'Layanan Virtual Office', price: 2500000, paid: 2500000, evidence: 'bukti_tf_10.jpg', workStatus: 'Selesai', invoiceNo: 'INV-VO-202611-010', notes: 'Lunas 1 tahun', invMeta: null }
   ]
 };
 
@@ -296,6 +459,18 @@ let state = loadState();
 let clientFilter = 'Semua';
 let invoiceFilter = 'Semua';
 let pendingEvidence = '';
+let activePreviewId = null;
+
+function initDropdowns() {
+  const brandOpts = BRANDS.map(b => `<option value="${b}">${b}</option>`).join('');
+  document.getElementById('cBrand').innerHTML = brandOpts;
+  document.getElementById('mBrand').innerHTML = brandOpts;
+  document.getElementById('cService').innerHTML = SERVICES.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+  document.getElementById('invSenderCompany').innerHTML = SENDER_COMPANIES.map(x => `<option value="${x}">${x}</option>`).join('');
+  document.getElementById('invSenderAddress').innerHTML = SENDER_ADDRESSES.map(x => `<option value="${x}">${x}</option>`).join('');
+  document.getElementById('invSenderPhone').innerHTML = HOTLINE_OPTIONS.map(x => `<option value="${x}">${x}</option>`).join('');
+  document.getElementById('invBankInfo').innerHTML = BANK_OPTIONS.map(x => `<option value="${x}">${x}</option>`).join('');
+}
 
 function loadState() {
   try {
@@ -329,6 +504,20 @@ function fmtRp(n) {
 function mitraName(id) {
   const m = state.mitras.find(x => x.id === id);
   return m ? m.name : '-';
+}
+
+function defaultInvMetaFor(c) {
+  const svc = SERVICES.find(s => s.name === c.service);
+  return {
+    date: new Date().toISOString().slice(0, 10),
+    dueDate: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10),
+    senderCompany: c.brand === 'Summitech Global Indo' ? SENDER_COMPANIES[1] : SENDER_COMPANIES[0],
+    senderAddress: SENDER_ADDRESSES[0],
+    senderPhone: BRAND_HOTLINE_MAP[c.brand] || HOTLINE_OPTIONS[0],
+    bankInfo: c.brand === 'Summitech Global Indo' ? BANK_OPTIONS[1] : BANK_OPTIONS[0],
+    itemTitle: c.service,
+    itemDetails: svc ? svc.details : ''
+  };
 }
 
 function payStatusOf(c) {
@@ -366,14 +555,13 @@ function renderDashboard() {
   const active = state.clients.filter(c => c.workStatus !== 'Batal');
   const totalMasuk = active.reduce((s, c) => s + c.paid, 0);
   const stuckClients = active.filter(c => (c.workStatus === 'On Proses' || c.workStatus === 'Selesai') && c.paid < c.price);
-  const totalNyangkut = stuckClients.reduce((s, c) => s + (c.price - c.paid), 0);
+  const totalUnpaid = stuckClients.reduce((s, c) => s + (c.price - c.paid), 0);
   const onProcessCount = active.filter(c => c.workStatus === 'On Proses').length;
 
   const totalLeads = active.length;
   const converted = active.filter(c => c.paid > 0);
   const convPct = totalLeads ? Math.round((converted.length / totalLeads) * 100) : 0;
 
-  // Per Sumber (Iklan vs Mitra)
   const bySource = ['Iklan', 'Mitra'].map(src => {
     const list = active.filter(c => c.source === src);
     const paidList = list.filter(c => c.paid > 0);
@@ -382,7 +570,6 @@ function renderDashboard() {
     return { src, total: list.length, paidCount: paidList.length, pct, cash };
   });
 
-  // Per Brand
   const byBrand = BRANDS.map(b => {
     const list = active.filter(c => c.brand === b);
     const paidList = list.filter(c => c.paid > 0);
@@ -391,7 +578,6 @@ function renderDashboard() {
     return { brand: b, total: list.length, paidCount: paidList.length, pct, cash };
   }).filter(x => x.total > 0);
 
-  // Per Layanan
   const svcMap = {};
   active.forEach(c => {
     if (!svcMap[c.service]) svcMap[c.service] = { svc: c.service, total: 0, paidCount: 0, cash: 0 };
@@ -405,12 +591,11 @@ function renderDashboard() {
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 class="text-xl font-bold text-[#0B192C]">Dashboard Ringkas</h1>
-        <p class="text-xs text-slate-500">Pantau uang masuk, tagihan belum lunas, pengerjaan, dan konversi (patokan: sudah bayar DP/Lunas).</p>
+        <p class="text-xs text-slate-500">Pantau pembayaran diterima, tagihan belum lunas, pengerjaan, dan konversi (patokan: sudah bayar DP/Lunas).</p>
       </div>
       <button onclick="openClientModal()" class="px-4 py-2 rounded-lg bg-[#0B192C] text-white text-sm font-semibold hover:opacity-95">+ Input Klien Baru</button>
     </div>
 
-    <!-- 4 KPI Utama -->
     <div class="bg-white rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
       <div class="p-4">
         <div class="text-xs font-semibold text-slate-500 uppercase">Pembayaran Diterima</div>
@@ -419,7 +604,7 @@ function renderDashboard() {
       </div>
       <div class="p-4 bg-rose-50/40">
         <div class="text-xs font-semibold text-rose-700 uppercase">Tagihan Belum Lunas</div>
-        <div class="text-2xl font-extrabold text-rose-700 mt-1 tabular">${fmtRp(totalNyangkut)}</div>
+        <div class="text-2xl font-extrabold text-rose-700 mt-1 tabular">${fmtRp(totalUnpaid)}</div>
         <div class="text-xs text-rose-600 mt-1">${stuckClients.length} klien belum bayar / sisa DP</div>
       </div>
       <div class="p-4">
@@ -434,7 +619,6 @@ function renderDashboard() {
       </div>
     </div>
 
-    <!-- Daftar Uang Nyangkut -->
     <div class="bg-white rounded-xl border border-rose-200 overflow-hidden">
       <div class="px-4 py-3 bg-rose-50 border-b border-rose-200 flex flex-wrap items-center justify-between gap-2">
         <div>
@@ -471,7 +655,6 @@ function renderDashboard() {
       </div>
     </div>
 
-    <!-- Konversi Per Sumber, Per Brand, Per Layanan -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
       <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <div class="px-4 py-3 border-b border-slate-200">
@@ -571,15 +754,14 @@ function renderDashboard() {
 function renderClients() {
   const statuses = ['Semua', 'Prospek', 'On Proses', 'Selesai', 'Batal'];
   const list = state.clients.filter(c => clientFilter === 'Semua' || c.workStatus === clientFilter);
-  const canWrite = true;
 
   return `
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 class="text-xl font-bold text-[#0B192C]">Klien &amp; Pengerjaan Divisi</h1>
-        <p class="text-xs text-slate-500">Input dari CS (Sumber, Brand, Mitra, Layanan, Harga), pantau pengerjaan divisi.</p>
+        <p class="text-xs text-slate-500">Input dari CS (Sumber, Brand, Mitra, 28 Jenis Layanan, Harga), pantau pengerjaan divisi.</p>
       </div>
-      ${canWrite ? `<button onclick="openClientModal()" class="px-4 py-2 rounded-lg bg-[#0B192C] text-white text-sm font-semibold">+ Input Klien Baru</button>` : `<span class="text-xs px-3 py-1 rounded-full bg-slate-200 text-slate-700 font-medium">Mode Owner: Lihat saja</span>`}
+      <button onclick="openClientModal()" class="px-4 py-2 rounded-lg bg-[#0B192C] text-white text-sm font-semibold">+ Input Klien Baru</button>
     </div>
 
     <div class="flex flex-wrap gap-2">
@@ -599,7 +781,7 @@ function renderClients() {
             <th class="px-4 py-2.5">Layanan &amp; Harga</th>
             <th class="px-4 py-2.5">Status Pengerjaan</th>
             <th class="px-4 py-2.5">Status Bayar</th>
-            ${canWrite ? '<th class="px-4 py-2.5 text-right">Aksi Cepat</th>' : ''}
+            <th class="px-4 py-2.5 text-right">Aksi Cepat</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
@@ -608,28 +790,28 @@ function renderClients() {
             const psBadge = ps === 'Lunas' ? 'bg-emerald-50 text-emerald-700' : ps === 'DP' ? 'bg-amber-50 text-amber-800' : ps === 'Batal' ? 'bg-slate-100 text-slate-500' : 'bg-rose-50 text-rose-700';
             return `
               <tr class="hover:bg-slate-50">
-                <td class="px-4 py-2.5 font-semibold">${c.name}<div class="text-xs font-normal text-slate-500">${c.phone}</div></td>
+                <td class="px-4 py-2.5 font-semibold">${c.name}<div class="text-xs font-normal text-slate-500">${c.phone}${c.city ? ' • ' + c.city : ''}</div></td>
                 <td class="px-4 py-2.5 text-xs">
                   <span class="font-semibold text-slate-800">${c.source}</span>${c.source === 'Mitra' ? ` (${mitraName(c.mitraId)})` : ''}
                   <div class="text-slate-500">Brand: ${c.brand}</div>
                 </td>
                 <td class="px-4 py-2.5">${c.service}<div class="text-xs font-semibold text-slate-700 tabular">${fmtRp(c.price)}</div></td>
                 <td class="px-4 py-2.5">
-                  ${canWrite ? `
-                    <select onchange="changeWorkStatus('${c.id}', this.value)" class="border border-slate-300 rounded px-2 py-1 text-xs bg-white font-medium">
-                      ${['Prospek', 'On Proses', 'Selesai', 'Batal'].map(s => `<option value="${s}" ${c.workStatus === s ? 'selected' : ''}>${s}</option>`).join('')}
-                    </select>
-                  ` : `<span class="text-xs font-medium">${c.workStatus}</span>`}
+                  <select onchange="changeWorkStatus('${c.id}', this.value)" class="border border-slate-300 rounded px-2 py-1 text-xs bg-white font-medium">
+                    ${['Prospek', 'On Proses', 'Selesai', 'Batal'].map(s => `<option value="${s}" ${c.workStatus === s ? 'selected' : ''}>${s}</option>`).join('')}
+                  </select>
                 </td>
                 <td class="px-4 py-2.5">
-                  <span class="badge-dot px-2.5 py-1 rounded-full text-xs font-semibold ${psBadge}">${ps}</span>
+                  <span class="badge-dot whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-semibold ${psBadge}">${ps}</span>
                 </td>
-                ${canWrite ? `
-                  <td class="px-4 py-2.5 text-right space-x-1">
-                    ${!c.invoiceNo && c.workStatus !== 'Batal' ? `<button onclick="createInvoice('${c.id}')" class="px-2.5 py-1 rounded border border-slate-300 text-xs font-medium hover:bg-slate-100">Buat Invoice</button>` : ''}
-                    ${ps !== 'Lunas' && ps !== 'Batal' ? `<button onclick="openPayModal('${c.id}')" class="px-2.5 py-1 rounded bg-[#0B192C] text-white text-xs font-medium">Catat Bayar</button>` : ''}
-                  </td>
-                ` : ''}
+                <td class="px-4 py-2.5 text-right space-x-1 whitespace-nowrap">
+                  ${c.workStatus !== 'Batal' ? (
+                    c.noInvoice
+                      ? `<button onclick="toggleNoInvoice('${c.id}')" class="px-2.5 py-1 rounded bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200" title="Klik jika jadi pakai invoice">Tanpa Invoice</button>`
+                      : `<button onclick="openInvoiceForm('${c.id}')" class="px-2.5 py-1 rounded border border-slate-300 text-xs font-medium hover:bg-slate-100">${c.invoiceNo ? 'Edit Invoice' : 'Buat Invoice'}</button>${!c.invoiceNo ? `<button onclick="toggleNoInvoice('${c.id}')" class="px-2 py-1 rounded border border-slate-200 text-slate-500 text-xs hover:bg-slate-100">Tdk Pakai Inv</button>` : ''}`
+                  ) : ''}
+                  ${ps !== 'Lunas' && ps !== 'Batal' ? `<button onclick="openPayModal('${c.id}')" class="px-2.5 py-1 rounded bg-[#0B192C] text-white text-xs font-medium">Catat Bayar</button>` : ''}
+                </td>
               </tr>
             `;
           }).join('')}
@@ -649,13 +831,12 @@ function renderInvoices() {
     if (invoiceFilter === 'Lunas') return ps === 'Lunas';
     return true;
   });
-  const canWrite = true;
 
   return `
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 class="text-xl font-bold text-[#0B192C]">Invoice &amp; Pembayaran</h1>
-        <p class="text-xs text-slate-500">Setiap pembayaran (DP / Pelunasan / Lunas) wajib melampirkan bukti transfer (evidence).</p>
+        <p class="text-xs text-slate-500">Invoice sudah memuat alamat brand &amp; nomor telp brand, siap download PDF. Pembayaran wajib upload bukti.</p>
       </div>
     </div>
 
@@ -677,7 +858,7 @@ function renderInvoices() {
             <th class="px-4 py-2.5 text-right">Sudah Bayar</th>
             <th class="px-4 py-2.5 text-right">Sisa</th>
             <th class="px-4 py-2.5">Evidence (Bukti)</th>
-            ${canWrite ? '<th class="px-4 py-2.5 text-right">Aksi</th>' : ''}
+            <th class="px-4 py-2.5 text-right">Aksi</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 tabular">
@@ -685,7 +866,7 @@ function renderInvoices() {
             const sisa = Math.max(0, c.price - c.paid);
             return `
               <tr class="hover:bg-slate-50">
-                <td class="px-4 py-2.5 font-mono text-xs">${c.invoiceNo || '<span class="text-slate-400">Belum dibuat</span>'}</td>
+                <td class="px-4 py-2.5 font-mono text-xs">${c.noInvoice ? '<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-sans">Tanpa Invoice</span>' : (c.invoiceNo || '<span class="text-slate-400">Belum dibuat</span>')}</td>
                 <td class="px-4 py-2.5 font-semibold">${c.name}<div class="text-xs font-normal text-slate-500">${c.brand} • ${c.service}</div></td>
                 <td class="px-4 py-2.5 text-right">${fmtRp(c.price)}</td>
                 <td class="px-4 py-2.5 text-right text-emerald-700 font-semibold">${fmtRp(c.paid)}</td>
@@ -693,12 +874,15 @@ function renderInvoices() {
                 <td class="px-4 py-2.5 text-xs">
                   ${c.evidence ? `<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium">✓ ${c.evidence}</span>` : `<span class="text-rose-600">Belum ada bukti</span>`}
                 </td>
-                ${canWrite ? `
-                  <td class="px-4 py-2.5 text-right space-x-1">
-                    ${!c.invoiceNo ? `<button onclick="createInvoice('${c.id}')" class="px-2.5 py-1 rounded border border-slate-300 text-xs font-medium">Buat Invoice</button>` : ''}
-                    ${sisa > 0 ? `<button onclick="openPayModal('${c.id}')" class="px-2.5 py-1 rounded bg-[#0B192C] text-white text-xs font-medium">Catat Bayar</button>` : ''}
-                  </td>
-                ` : ''}
+                <td class="px-4 py-2.5 text-right space-x-1 whitespace-nowrap">
+                  ${c.noInvoice
+                    ? `<button onclick="toggleNoInvoice('${c.id}')" class="px-2.5 py-1 rounded border border-slate-300 text-slate-600 text-xs font-medium hover:bg-slate-50">Pakai Invoice</button>`
+                    : `<button onclick="openInvoiceForm('${c.id}')" class="px-2.5 py-1 rounded border border-slate-300 text-xs font-medium hover:bg-slate-50">${c.invoiceNo ? 'Edit' : 'Buat'}</button>
+                       <button onclick="openInvoicePreview('${c.id}')" class="px-2.5 py-1 rounded border border-[#0B192C] text-[#0B192C] text-xs font-semibold hover:bg-slate-50">PDF</button>
+                       ${!c.invoiceNo ? `<button onclick="toggleNoInvoice('${c.id}')" class="px-2 py-1 rounded border border-slate-200 text-slate-500 text-xs hover:bg-slate-50">Tdk Pakai Inv</button>` : ''}`
+                  }
+                  ${sisa > 0 ? `<button onclick="openPayModal('${c.id}')" class="px-2.5 py-1 rounded bg-[#0B192C] text-white text-xs font-medium">Catat Bayar</button>` : ''}
+                </td>
               </tr>
             `;
           }).join('')}
@@ -709,14 +893,13 @@ function renderInvoices() {
 }
 
 function renderMitra() {
-  const canWrite = true;
   return `
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 class="text-xl font-bold text-[#0B192C]">Data Mitra</h1>
         <p class="text-xs text-slate-500">Daftar mitra dan jumlah klien yang dibawa (tanpa hitung komisi dulu).</p>
       </div>
-      ${canWrite ? `<button onclick="openModal('mitraModal')" class="px-4 py-2 rounded-lg bg-[#0B192C] text-white text-sm font-semibold">+ Tambah Mitra</button>` : ''}
+      <button onclick="openModal('mitraModal')" class="px-4 py-2 rounded-lg bg-[#0B192C] text-white text-sm font-semibold">+ Tambah Mitra</button>
     </div>
 
     <div class="bg-white rounded-xl border border-slate-200 overflow-x-auto">
@@ -767,13 +950,15 @@ function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 function openClientModal() {
   document.getElementById('cName').value = '';
   document.getElementById('cPhone').value = '';
+  document.getElementById('cCity').value = '';
   document.getElementById('cSource').value = 'Iklan';
   document.getElementById('cBrand').value = BRANDS[0];
-  document.getElementById('cService').value = 'PT Perseroan';
-  document.getElementById('cPrice').value = '6500000';
+  document.getElementById('cService').value = SERVICES[0].name;
+  document.getElementById('cPrice').value = String(SERVICES[0].price);
   document.getElementById('cWorkStatus').value = 'On Proses';
   document.getElementById('cNotes').value = '';
-  document.getElementById('cMitra').innerHTML = state.mitras.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+  document.getElementById('cNoInvoice').checked = false;
+  document.getElementById('cMitra').innerHTML = state.mitras.map(m => `<option value="${m.id}">${m.name} (${m.id})</option>`).join('');
   toggleMitraField();
   openModal('clientModal');
 }
@@ -784,8 +969,9 @@ function toggleMitraField() {
 }
 
 function suggestPrice() {
-  const map = { 'PT Perseroan': 6500000, 'CV': 4000000, 'Yayasan': 5000000, 'NPWP Badan': 750000, 'NPWP Perorangan': 500000, 'NIB Badan': 750000, 'Virtual Office': 3500000 };
-  document.getElementById('cPrice').value = map[document.getElementById('cService').value] || 0;
+  const name = document.getElementById('cService').value;
+  const svc = SERVICES.find(s => s.name === name);
+  if (svc) document.getElementById('cPrice').value = String(svc.price);
 }
 
 function saveClient(e) {
@@ -795,6 +981,7 @@ function saveClient(e) {
     id: 'ORD-' + String(state.clients.length + 1).padStart(2, '0'),
     name: document.getElementById('cName').value.trim(),
     phone: document.getElementById('cPhone').value.trim(),
+    city: document.getElementById('cCity').value.trim(),
     source: src,
     brand: document.getElementById('cBrand').value,
     mitraId: src === 'Mitra' ? document.getElementById('cMitra').value : '',
@@ -804,7 +991,9 @@ function saveClient(e) {
     evidence: '',
     workStatus: document.getElementById('cWorkStatus').value,
     invoiceNo: '',
-    notes: document.getElementById('cNotes').value.trim()
+    noInvoice: document.getElementById('cNoInvoice').checked,
+    notes: document.getElementById('cNotes').value.trim(),
+    invMeta: null
   };
   state.clients.unshift(newC);
   saveState();
@@ -817,7 +1006,7 @@ function changeWorkStatus(id, newStatus) {
   const c = state.clients.find(x => x.id === id);
   if (!c) return;
   c.workStatus = newStatus;
-  if (newStatus === 'Selesai' && !c.invoiceNo) {
+  if (newStatus === 'Selesai' && !c.invoiceNo && !c.noInvoice) {
     c.invoiceNo = 'INV-202611-' + String(Math.floor(100 + Math.random() * 900));
     showToast('Status Selesai → Invoice ' + c.invoiceNo + ' otomatis dibuat!');
   } else {
@@ -827,13 +1016,163 @@ function changeWorkStatus(id, newStatus) {
   render();
 }
 
-function createInvoice(id) {
+function toggleNoInvoice(id) {
   const c = state.clients.find(x => x.id === id);
   if (!c) return;
-  c.invoiceNo = 'INV-202611-' + String(Math.floor(100 + Math.random() * 900));
+  c.noInvoice = !c.noInvoice;
+  if (c.noInvoice) c.invoiceNo = '';
   saveState();
   render();
-  showToast('Invoice ' + c.invoiceNo + ' dibuat untuk ' + c.name);
+  showToast(c.noInvoice ? c.name + ' ditandai Tanpa Invoice' : c.name + ' kembali menggunakan Invoice');
+}
+
+function openInvoiceForm(id) {
+  const c = state.clients.find(x => x.id === id);
+  if (!c) return;
+  const meta = c.invMeta || defaultInvMetaFor(c);
+  if (!c.invoiceNo) c.invoiceNo = 'INV-202611-' + String(Math.floor(100 + Math.random() * 900));
+  document.getElementById('invClientId').value = c.id;
+  document.getElementById('invNo').value = c.invoiceNo;
+  document.getElementById('invDate').value = meta.date;
+  document.getElementById('invDueDate').value = meta.dueDate;
+  document.getElementById('invSenderCompany').value = meta.senderCompany;
+  document.getElementById('invSenderPhone').value = meta.senderPhone;
+  document.getElementById('invSenderAddress').value = meta.senderAddress;
+  document.getElementById('invBankInfo').value = meta.bankInfo;
+  document.getElementById('invItemTitle').value = meta.itemTitle;
+  document.getElementById('invPrice').value = c.price;
+  document.getElementById('invItemDetails').value = meta.itemDetails;
+  openModal('invoiceFormModal');
+}
+
+function saveInvoiceForm(e) {
+  e.preventDefault();
+  const id = document.getElementById('invClientId').value;
+  const c = state.clients.find(x => x.id === id);
+  if (!c) return;
+  c.invoiceNo = document.getElementById('invNo').value.trim();
+  c.price = Number(document.getElementById('invPrice').value || 0);
+  c.invMeta = {
+    date: document.getElementById('invDate').value,
+    dueDate: document.getElementById('invDueDate').value,
+    senderCompany: document.getElementById('invSenderCompany').value,
+    senderPhone: document.getElementById('invSenderPhone').value,
+    senderAddress: document.getElementById('invSenderAddress').value,
+    bankInfo: document.getElementById('invBankInfo').value,
+    itemTitle: document.getElementById('invItemTitle').value.trim(),
+    itemDetails: document.getElementById('invItemDetails').value.trim()
+  };
+  saveState();
+  closeModal('invoiceFormModal');
+  render();
+  openInvoicePreview(c.id);
+}
+
+function openInvoicePreview(id) {
+  const c = state.clients.find(x => x.id === id);
+  if (!c) return;
+  activePreviewId = c.id;
+  if (!c.invoiceNo) c.invoiceNo = 'INV-202611-' + String(Math.floor(100 + Math.random() * 900));
+  const meta = c.invMeta || defaultInvMetaFor(c);
+  const sisa = Math.max(0, c.price - c.paid);
+  const ps = payStatusOf(c);
+  const stampClass = ps === 'Lunas' ? 'border-emerald-600 text-emerald-700 bg-emerald-50' : ps === 'DP' ? 'border-amber-600 text-amber-700 bg-amber-50' : 'border-rose-600 text-rose-700 bg-rose-50';
+
+  document.getElementById('invoicePrintArea').innerHTML = `
+    <div class="flex flex-wrap justify-between items-start gap-4 border-b-2 border-[#0B192C] pb-4">
+      <div class="max-w-md space-y-1">
+        <div class="text-lg font-extrabold text-[#0B192C]">${meta.senderCompany}</div>
+        <div class="text-xs font-semibold text-[#B48A1E]">Brand: ${c.brand}</div>
+        <div class="text-xs text-slate-600 leading-relaxed">${meta.senderAddress}</div>
+        <div class="text-xs font-semibold text-slate-700">Telp / Hotline: ${meta.senderPhone}</div>
+      </div>
+      <div class="text-right space-y-1">
+        <div class="text-2xl font-black tracking-wide text-[#0B192C]">INVOICE</div>
+        <div class="font-mono text-xs font-bold text-slate-700">${c.invoiceNo}</div>
+        <div class="text-xs text-slate-500">Tanggal: ${meta.date}</div>
+        <div class="text-xs text-slate-500">Jatuh Tempo: ${meta.dueDate}</div>
+        <div class="inline-block mt-1 px-2.5 py-0.5 border-2 rounded font-extrabold text-xs uppercase ${stampClass}">${ps}</div>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap justify-between gap-4 text-xs">
+      <div>
+        <div class="text-slate-400 font-bold uppercase mb-1">Ditagihkan Kepada:</div>
+        <div class="text-sm font-bold text-slate-900">${c.name}</div>
+        <div class="text-slate-600">WhatsApp: ${c.phone}</div>
+        ${c.city ? `<div class="text-slate-600">${c.city}</div>` : ''}
+      </div>
+      <div class="text-right">
+        <div class="text-slate-400 font-bold uppercase mb-1">Sumber Order:</div>
+        <div class="font-semibold text-slate-800">${c.source}${c.source === 'Mitra' ? ' (' + mitraName(c.mitraId) + ')' : ''}</div>
+      </div>
+    </div>
+
+    <table class="w-full text-sm border border-slate-200">
+      <thead class="bg-[#0B192C] text-white text-xs uppercase">
+        <tr>
+          <th class="px-3 py-2 text-left">Layanan &amp; Rincian</th>
+          <th class="px-3 py-2 text-center w-16">Qty</th>
+          <th class="px-3 py-2 text-right w-36">Harga</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-b border-slate-200">
+          <td class="px-3 py-3">
+            <div class="font-bold text-slate-900">${meta.itemTitle}</div>
+            <div class="text-xs text-slate-600 mt-1 leading-relaxed">${meta.itemDetails || '-'}</div>
+          </td>
+          <td class="px-3 py-3 text-center">1</td>
+          <td class="px-3 py-3 text-right font-semibold tabular">${fmtRp(c.price)}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="flex flex-wrap justify-between items-start gap-6 pt-2">
+      <div class="max-w-sm text-xs space-y-1 bg-slate-50 p-3 rounded-lg border border-slate-200">
+        <div class="font-bold text-[#0B192C] uppercase">Informasi Pembayaran</div>
+        <div class="font-semibold text-slate-800">${meta.bankInfo}</div>
+        <div class="text-slate-500 pt-1">Mohon kirimkan bukti transfer setelah melakukan pembayaran.</div>
+      </div>
+      <div class="w-64 space-y-1.5 text-sm tabular ml-auto">
+        <div class="flex justify-between text-slate-600"><span>Total Tagihan</span><span class="font-semibold">${fmtRp(c.price)}</span></div>
+        <div class="flex justify-between text-emerald-700"><span>Sudah Dibayar</span><span class="font-semibold">- ${fmtRp(c.paid)}</span></div>
+        <div class="flex justify-between border-t-2 border-[#0B192C] pt-1.5 text-base font-extrabold text-[#0B192C]"><span>Sisa Tagihan</span><span>${fmtRp(sisa)}</span></div>
+      </div>
+    </div>
+  `;
+  openModal('invoicePreviewModal');
+}
+
+async function downloadInvoicePDF() {
+  const c = state.clients.find(x => x.id === activePreviewId);
+  const el = document.getElementById('invoicePrintArea');
+  const btn = document.getElementById('btnDownloadPdf');
+  if (!c || !el) return;
+  if (!window.html2canvas || !window.jspdf) {
+    window.print();
+    return;
+  }
+  btn.textContent = 'Membuat PDF...';
+  btn.disabled = true;
+  try {
+    const canvas = await window.html2canvas(el, { scale: 2, backgroundColor: '#ffffff' });
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const imgW = pageW - 20;
+    const imgH = (canvas.height * imgW) / canvas.width;
+    pdf.addImage(imgData, 'PNG', 10, 10, imgW, imgH);
+    const safeName = (c.name + ' - ' + (c.invoiceNo || 'INVOICE')).replace(/[^a-zA-Z0-9 _-]/g, '');
+    pdf.save(safeName + '.pdf');
+    showToast('PDF berhasil didownload!');
+  } catch (err) {
+    showToast('Gagal generate PDF, pakai Cetak saja.');
+  } finally {
+    btn.textContent = 'Download PDF';
+    btn.disabled = false;
+  }
 }
 
 function openPayModal(id) {
@@ -843,7 +1182,7 @@ function openPayModal(id) {
   document.getElementById('pClientId').value = c.id;
   document.getElementById('pClientName').textContent = c.name + ' (' + c.service + ')';
   document.getElementById('pClientSummary').textContent = `Tagihan ${fmtRp(c.price)} • Sudah bayar ${fmtRp(c.paid)} • Sisa ${fmtRp(sisa)}`;
-  document.getElementById('pType').value = c.paid > 0 ? 'Pelunasan' : (c.price >= 3000000 ? 'DP' : 'Lunas');
+  document.getElementById('pType').value = c.paid > 0 ? 'Pelunasan' : (c.price >= 2000000 ? 'DP' : 'Lunas');
   document.getElementById('pAmount').value = sisa;
   pendingEvidence = '';
   document.getElementById('pFile').value = '';
@@ -882,7 +1221,7 @@ function savePayment(e) {
   if (!c) return;
   c.paid = Math.min(c.price, c.paid + amt);
   c.evidence = pendingEvidence;
-  if (!c.invoiceNo) c.invoiceNo = 'INV-202611-' + String(Math.floor(100 + Math.random() * 900));
+  if (!c.invoiceNo && !c.noInvoice) c.invoiceNo = 'INV-202611-' + String(Math.floor(100 + Math.random() * 900));
   saveState();
   closeModal('payModal');
   render();
@@ -913,6 +1252,7 @@ function saveMitra(e) {
   showToast('Mitra ' + m.name + ' (' + m.id + ') ditambahkan');
 }
 
+initDropdowns();
 render();
 </script>
 </body>
