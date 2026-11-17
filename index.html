@@ -41,12 +41,7 @@
       <span>Semua data di halaman ini hanya <strong>CONTOH</strong> (tersimpan di browser saja). Silakan klik-klik &amp; uji alurnya.</span>
     </div>
     <div class="flex items-center gap-2">
-      <span class="text-amber-800">Lihat sebagai:</span>
-      <select id="roleSwitch" onchange="setRole(this.value)" class="bg-white border border-amber-400 rounded px-2 py-0.5 font-semibold text-xs">
-        <option value="owner">Owner (Pantau &amp; Analisa)</option>
-        <option value="admin">Admin (Input &amp; Tagih)</option>
-      </select>
-      <button onclick="resetDemo()" class="underline text-amber-900 hover:text-black ml-2">Reset Contoh</button>
+      <button onclick="resetDemo()" class="underline text-amber-900 hover:text-black font-semibold">Reset Contoh</button>
     </div>
   </div>
 
@@ -262,7 +257,7 @@
   </div>
 
 <script>
-const STORAGE_KEY = 'sgi_crm_mockup_v3_r3';
+const STORAGE_KEY = 'sgi_crm_mockup_v3_r4';
 
 const BRANDS = [
   'Summitech Global Indo',
@@ -274,7 +269,6 @@ const BRANDS = [
 ];
 
 const DEFAULT_DATA = {
-  role: 'owner',
   tab: 'dashboard',
   mitras: [
     { id: 'MTR-01', name: 'Budi Santoso (Konsultan)', brand: 'SGI Indonesia', phone: '08129000111' },
@@ -318,13 +312,6 @@ function resetDemo() {
   showToast('Data contoh dikembalikan ke awal');
 }
 
-function setRole(r) {
-  state.role = r;
-  saveState();
-  render();
-  showToast('Mode tampilan: ' + (r === 'owner' ? 'Owner (Pantau)' : 'Admin (Input & Tagih)'));
-}
-
 function switchTab(t) {
   state.tab = t;
   saveState();
@@ -357,12 +344,11 @@ function showToast(msg) {
 
 function renderNav() {
   const items = [
-    { id: 'dashboard', label: '1. Dashboard (Owner)' },
+    { id: 'dashboard', label: '1. Dashboard' },
     { id: 'clients', label: '2. Klien & Pengerjaan' },
     { id: 'invoices', label: '3. Invoice & Bayar' },
     { id: 'mitra', label: '4. Mitra' },
   ];
-  document.getElementById('roleSwitch').value = state.role;
   document.getElementById('desktopNav').innerHTML = items.map(it => `
     <button onclick="switchTab('${it.id}')" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition ${state.tab === it.id ? 'nav-active' : 'text-slate-700 hover:bg-slate-100'}">
       ${it.label}
@@ -417,7 +403,7 @@ function renderDashboard() {
         <h1 class="text-xl font-bold text-[#0B192C]">Dashboard Ringkas</h1>
         <p class="text-xs text-slate-500">Pantau uang masuk, uang nyangkut, pengerjaan, dan konversi (patokan: sudah bayar DP/Lunas).</p>
       </div>
-      ${state.role === 'admin' ? `<button onclick="openClientModal()" class="px-4 py-2 rounded-lg bg-[#0B192C] text-white text-sm font-semibold hover:opacity-95">+ Input Klien Baru</button>` : ''}
+      <button onclick="openClientModal()" class="px-4 py-2 rounded-lg bg-[#0B192C] text-white text-sm font-semibold hover:opacity-95">+ Input Klien Baru</button>
     </div>
 
     <!-- 4 KPI Utama -->
@@ -462,7 +448,7 @@ function renderDashboard() {
               <th class="px-4 py-2.5">Kerjaan</th>
               <th class="px-4 py-2.5 text-right">Kurang Bayar</th>
               <th class="px-4 py-2.5">Catatan</th>
-              ${state.role === 'admin' ? '<th class="px-4 py-2.5 text-right">Aksi</th>' : ''}
+              <th class="px-4 py-2.5 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
@@ -473,7 +459,7 @@ function renderDashboard() {
                 <td class="px-4 py-2.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${c.workStatus === 'Selesai' ? 'bg-teal-50 text-teal-700' : 'bg-cyan-50 text-cyan-700'}">${c.workStatus}</span></td>
                 <td class="px-4 py-2.5 text-right font-bold text-rose-700 tabular">${fmtRp(c.price - c.paid)}<div class="text-[11px] font-normal text-slate-500">${c.paid > 0 ? 'Sudah DP ' + fmtRp(c.paid) : 'Belum bayar sama sekali'}</div></td>
                 <td class="px-4 py-2.5 text-xs text-slate-600">${c.notes || '-'}</td>
-                ${state.role === 'admin' ? `<td class="px-4 py-2.5 text-right"><button onclick="openPayModal('${c.id}')" class="px-2.5 py-1 rounded bg-[#0B192C] text-white text-xs font-medium">Catat Bayar</button></td>` : ''}
+                <td class="px-4 py-2.5 text-right"><button onclick="openPayModal('${c.id}')" class="px-2.5 py-1 rounded bg-[#0B192C] text-white text-xs font-medium">Catat Bayar</button></td>
               </tr>
             `).join('')}
           </tbody>
@@ -581,7 +567,7 @@ function renderDashboard() {
 function renderClients() {
   const statuses = ['Semua', 'Prospek', 'On Proses', 'Selesai', 'Batal'];
   const list = state.clients.filter(c => clientFilter === 'Semua' || c.workStatus === clientFilter);
-  const canWrite = state.role === 'admin';
+  const canWrite = true;
 
   return `
     <div class="flex flex-wrap items-center justify-between gap-3">
@@ -659,7 +645,7 @@ function renderInvoices() {
     if (invoiceFilter === 'Lunas') return ps === 'Lunas';
     return true;
   });
-  const canWrite = state.role === 'admin';
+  const canWrite = true;
 
   return `
     <div class="flex flex-wrap items-center justify-between gap-3">
@@ -719,7 +705,7 @@ function renderInvoices() {
 }
 
 function renderMitra() {
-  const canWrite = state.role === 'admin';
+  const canWrite = true;
   return `
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
