@@ -157,7 +157,7 @@
             <label class="block text-xs font-semibold text-slate-600 mb-1">Status Pengerjaan</label>
             <select id="cWorkStatus" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white">
               <option value="Prospek">Prospek (Baru tanya)</option>
-              <option value="Dikerjakan Divisi">Dikerjakan Divisi</option>
+              <option value="On Proses">On Proses</option>
               <option value="Selesai">Selesai</option>
               <option value="Batal">Batal</option>
             </select>
@@ -239,6 +239,17 @@
           <input id="mName" required class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="Mis. Pak Hendra (Notaris)" />
         </div>
         <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Sumber Brand *</label>
+          <select id="mBrand" required class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white">
+            <option value="Summitech Global Indo">Summitech Global Indo</option>
+            <option value="SGI Indonesia">SGI Indonesia</option>
+            <option value="Legal Express Indonesia">Legal Express Indonesia</option>
+            <option value="Legalio Business Partners">Legalio Business Partners</option>
+            <option value="Legalitas Pro">Legalitas Pro</option>
+            <option value="Akura Mokoo Indonesia">Akura Mokoo Indonesia</option>
+          </select>
+        </div>
+        <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">No. WhatsApp</label>
           <input id="mPhone" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="0812..." />
         </div>
@@ -251,7 +262,7 @@
   </div>
 
 <script>
-const STORAGE_KEY = 'sgi_crm_mockup_v3_r2';
+const STORAGE_KEY = 'sgi_crm_mockup_v3_r3';
 
 const BRANDS = [
   'Summitech Global Indo',
@@ -266,12 +277,12 @@ const DEFAULT_DATA = {
   role: 'owner',
   tab: 'dashboard',
   mitras: [
-    { id: 'MTR-01', name: 'Budi Santoso (Konsultan)', phone: '08129000111' },
-    { id: 'MTR-02', name: 'Notaris Rina Partner', phone: '08138000222' }
+    { id: 'MTR-01', name: 'Budi Santoso (Konsultan)', brand: 'SGI Indonesia', phone: '08129000111' },
+    { id: 'MTR-02', name: 'Notaris Rina Partner', brand: 'Summitech Global Indo', phone: '08138000222' }
   ],
   clients: [
     { id: 'ORD-01', name: 'PT Nusantara Sejahtera (Contoh)', phone: '081211112222', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'PT Perseroan', price: 6500000, paid: 6500000, evidence: 'bukti_tf_01.jpg', workStatus: 'Selesai', invoiceNo: 'INV-202611-001', notes: 'Lunas via BCA' },
-    { id: 'ORD-02', name: 'PT Karya Mandiri (Contoh)', phone: '081233334444', source: 'Mitra', brand: 'SGI Indonesia', mitraId: 'MTR-01', service: 'PT Perseroan', price: 6500000, paid: 3000000, evidence: 'bukti_dp_02.jpg', workStatus: 'Dikerjakan Divisi', invoiceNo: 'INV-202611-002', notes: 'Sudah DP 3jt, sisa 3,5jt saat selesai' },
+    { id: 'ORD-02', name: 'PT Karya Mandiri (Contoh)', phone: '081233334444', source: 'Mitra', brand: 'SGI Indonesia', mitraId: 'MTR-01', service: 'PT Perseroan', price: 6500000, paid: 3000000, evidence: 'bukti_dp_02.jpg', workStatus: 'On Proses', invoiceNo: 'INV-202611-002', notes: 'Sudah DP 3jt, sisa 3,5jt saat selesai' },
     { id: 'ORD-03', name: 'CV Berkah Abadi (Contoh)', phone: '081255556666', source: 'Iklan', brand: 'Legal Express Indonesia', mitraId: '', service: 'CV', price: 4000000, paid: 2000000, evidence: 'bukti_dp_03.jpg', workStatus: 'Selesai', invoiceNo: 'INV-202611-003', notes: 'Kerjaan beres, tinggal tagih pelunasan' },
     { id: 'ORD-04', name: 'Andi Wijaya (Contoh)', phone: '081277778888', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'NPWP Perorangan', price: 500000, paid: 0, evidence: '', workStatus: 'Selesai', invoiceNo: 'INV-202611-004', notes: 'NPWP jadi, klien susah dihubungi!' },
     { id: 'ORD-05', name: 'Toko Sinar Baru (Contoh)', phone: '081299990000', source: 'Iklan', brand: 'Legal Express Indonesia', mitraId: '', service: 'NIB Badan', price: 750000, paid: 0, evidence: '', workStatus: 'Selesai', invoiceNo: 'INV-202611-005', notes: 'NIB terbit, belum transfer' },
@@ -364,9 +375,9 @@ function renderNav() {
 function renderDashboard() {
   const active = state.clients.filter(c => c.workStatus !== 'Batal');
   const totalMasuk = active.reduce((s, c) => s + c.paid, 0);
-  const stuckClients = active.filter(c => (c.workStatus === 'Dikerjakan Divisi' || c.workStatus === 'Selesai') && c.paid < c.price);
+  const stuckClients = active.filter(c => (c.workStatus === 'On Proses' || c.workStatus === 'Selesai') && c.paid < c.price);
   const totalNyangkut = stuckClients.reduce((s, c) => s + (c.price - c.paid), 0);
-  const onProcessCount = active.filter(c => c.workStatus === 'Dikerjakan Divisi').length;
+  const onProcessCount = active.filter(c => c.workStatus === 'On Proses').length;
 
   const totalLeads = active.length;
   const converted = active.filter(c => c.paid > 0);
@@ -422,9 +433,9 @@ function renderDashboard() {
         <div class="text-xs text-rose-600 mt-1">${stuckClients.length} klien selesai/proses belum lunas</div>
       </div>
       <div class="p-4">
-        <div class="text-xs font-semibold text-slate-500 uppercase">Sedang Dikerjakan Divisi</div>
+        <div class="text-xs font-semibold text-slate-500 uppercase">Sedang On Proses</div>
         <div class="text-2xl font-extrabold text-[#0B192C] mt-1 tabular">${onProcessCount} Order</div>
-        <div class="text-xs text-slate-500 mt-1">Dipantau dari CRM</div>
+        <div class="text-xs text-slate-500 mt-1">Dikerjakan tim divisi</div>
       </div>
       <div class="p-4">
         <div class="text-xs font-semibold text-slate-500 uppercase">Konversi Keseluruhan</div>
@@ -568,7 +579,7 @@ function renderDashboard() {
 }
 
 function renderClients() {
-  const statuses = ['Semua', 'Prospek', 'Dikerjakan Divisi', 'Selesai', 'Batal'];
+  const statuses = ['Semua', 'Prospek', 'On Proses', 'Selesai', 'Batal'];
   const list = state.clients.filter(c => clientFilter === 'Semua' || c.workStatus === clientFilter);
   const canWrite = state.role === 'admin';
 
@@ -616,7 +627,7 @@ function renderClients() {
                 <td class="px-4 py-2.5">
                   ${canWrite ? `
                     <select onchange="changeWorkStatus('${c.id}', this.value)" class="border border-slate-300 rounded px-2 py-1 text-xs bg-white font-medium">
-                      ${['Prospek', 'Dikerjakan Divisi', 'Selesai', 'Batal'].map(s => `<option value="${s}" ${c.workStatus === s ? 'selected' : ''}>${s}</option>`).join('')}
+                      ${['Prospek', 'On Proses', 'Selesai', 'Batal'].map(s => `<option value="${s}" ${c.workStatus === s ? 'selected' : ''}>${s}</option>`).join('')}
                     </select>
                   ` : `<span class="text-xs font-medium">${c.workStatus}</span>`}
                 </td>
@@ -724,6 +735,7 @@ function renderMitra() {
           <tr>
             <th class="px-4 py-2.5">Kode</th>
             <th class="px-4 py-2.5">Nama Mitra</th>
+            <th class="px-4 py-2.5">Sumber Brand</th>
             <th class="px-4 py-2.5">No. WA</th>
             <th class="px-4 py-2.5 text-right">Klien Bawaan</th>
             <th class="px-4 py-2.5 text-right">Total Uang Masuk</th>
@@ -737,6 +749,7 @@ function renderMitra() {
               <tr>
                 <td class="px-4 py-2.5 font-mono text-xs">${m.id}</td>
                 <td class="px-4 py-2.5 font-semibold">${m.name}</td>
+                <td class="px-4 py-2.5 text-xs text-slate-700">${m.brand || '-'}</td>
                 <td class="px-4 py-2.5 text-slate-600">${m.phone || '-'}</td>
                 <td class="px-4 py-2.5 text-right font-semibold">${refs.length} klien</td>
                 <td class="px-4 py-2.5 text-right text-emerald-700 font-semibold">${fmtRp(cash)}</td>
@@ -768,7 +781,7 @@ function openClientModal() {
   document.getElementById('cBrand').value = BRANDS[0];
   document.getElementById('cService').value = 'PT Perseroan';
   document.getElementById('cPrice').value = '6500000';
-  document.getElementById('cWorkStatus').value = 'Dikerjakan Divisi';
+  document.getElementById('cWorkStatus').value = 'On Proses';
   document.getElementById('cNotes').value = '';
   document.getElementById('cMitra').innerHTML = state.mitras.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
   toggleMitraField();
@@ -891,13 +904,14 @@ function saveMitra(e) {
   const m = {
     id: 'MTR-' + String(state.mitras.length + 1).padStart(2, '0'),
     name: document.getElementById('mName').value.trim(),
+    brand: document.getElementById('mBrand').value,
     phone: document.getElementById('mPhone').value.trim()
   };
   state.mitras.push(m);
   saveState();
   closeModal('mitraModal');
   render();
-  showToast('Mitra ' + m.name + ' ditambahkan');
+  showToast('Mitra ' + m.name + ' (' + m.brand + ') ditambahkan');
 }
 
 render();
