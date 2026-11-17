@@ -456,7 +456,7 @@ function renderDashboard() {
               <tr class="hover:bg-slate-50">
                 <td class="px-4 py-2.5 font-semibold text-slate-900">${c.name}<div class="text-xs font-normal text-slate-500">${c.phone}</div></td>
                 <td class="px-4 py-2.5">${c.service}<div class="text-xs text-slate-500">${c.brand}</div></td>
-                <td class="px-4 py-2.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${c.workStatus === 'Selesai' ? 'bg-teal-50 text-teal-700' : 'bg-cyan-50 text-cyan-700'}">${c.workStatus}</span></td>
+                <td class="px-4 py-2.5"><span class="whitespace-nowrap px-2 py-0.5 rounded-full text-xs font-medium ${c.workStatus === 'Selesai' ? 'bg-teal-50 text-teal-700' : 'bg-cyan-50 text-cyan-700'}">${c.workStatus}</span></td>
                 <td class="px-4 py-2.5 text-right font-bold text-rose-700 tabular">${fmtRp(c.price - c.paid)}<div class="text-[11px] font-normal text-slate-500">${c.paid > 0 ? 'Sudah DP ' + fmtRp(c.paid) : 'Belum bayar sama sekali'}</div></td>
                 <td class="px-4 py-2.5 text-xs text-slate-600">${c.notes || '-'}</td>
                 <td class="px-4 py-2.5 text-right"><button onclick="openPayModal('${c.id}')" class="px-2.5 py-1 rounded bg-[#0B192C] text-white text-xs font-medium">Catat Bayar</button></td>
