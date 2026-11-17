@@ -3,25 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mockup CRM SGI — Alur Baru (Simpel)</title>
+  <title>CRM SGI — Dashboard &amp; Alur Simpel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas-pro@1.5.8/dist/html2canvas-pro.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <style>
     :root {
       --navy: #0B192C;
       --gold: #D4AF37;
+      --surface: #F6F7F9;
     }
+    ::selection { background: #0B192C; color: #FDE68A; }
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
     body {
       font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-      background: #F6F7F9;
-      color: #1E293B;
+      background: var(--surface);
+      color: #0F172A;
+      caret-color: #0B192C;
+    }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 2px solid #D4AF37;
+      outline-offset: 2px;
     }
     .tabular { font-variant-numeric: tabular-nums; }
     .nav-active {
       background: #0B192C;
       color: #FFFFFF;
-      border-left: 3px solid #D4AF37;
+      box-shadow: 0 2px 6px rgba(11, 25, 44, 0.14);
     }
     .badge-dot::before {
       content: '';
@@ -31,6 +47,14 @@
       border-radius: 9999px;
       margin-right: 6px;
       background: currentColor;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeUp 240ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @media (prefers-reduced-motion: reduce) {
+      .animate-in { animation: none; }
     }
     @media print {
       body * { visibility: hidden !important; }
@@ -49,14 +73,12 @@
 <body class="min-h-screen flex flex-col">
 
   <!-- Banner Mockup -->
-  <div class="bg-amber-100 border-b border-amber-300 text-amber-950 text-xs px-4 py-2 flex flex-wrap items-center justify-between gap-2">
+  <div class="bg-amber-50 border-b border-amber-200 text-amber-950 text-xs px-4 py-2 flex flex-wrap items-center justify-between gap-2">
     <div class="flex items-center gap-2">
-      <span class="font-bold px-2 py-0.5 bg-amber-300 rounded">MOCKUP INTERAKTIF</span>
-      <span>Semua data di halaman ini hanya <strong>CONTOH</strong> (tersimpan di browser saja). Silakan klik-klik &amp; uji alurnya.</span>
+      <span class="font-bold px-2 py-0.5 bg-amber-200/80 text-amber-950 rounded">MOCKUP INTERAKTIF</span>
+      <span>Data contoh tersimpan di browser Anda. Silakan uji filter, grafik, input klien, dan download PDF invoice.</span>
     </div>
-    <div class="flex items-center gap-2">
-      <button onclick="resetDemo()" class="underline text-amber-900 hover:text-black font-semibold">Reset Contoh</button>
-    </div>
+    <button onclick="resetDemo()" class="underline text-amber-900 hover:text-black font-semibold">Reset Data Contoh</button>
   </div>
 
   <div class="flex flex-1 min-h-0">
@@ -64,17 +86,17 @@
     <aside class="hidden md:flex md:w-60 bg-white border-r border-slate-200 flex-col shrink-0">
       <div class="p-4 border-b border-slate-200">
         <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-lg bg-[#0B192C] text-[#D4AF37] font-extrabold flex items-center justify-center text-sm">SGI</div>
+          <div class="w-9 h-9 rounded-xl bg-[#0B192C] text-[#D4AF37] font-extrabold flex items-center justify-center text-sm tracking-tight">SGI</div>
           <div>
-            <div class="font-bold text-sm text-[#0B192C]">CRM SGI</div>
-            <div class="text-[11px] text-slate-500">Alur Simpel (Draft)</div>
+            <div class="font-bold text-sm text-[#0B192C] tracking-tight">CRM SGI</div>
+            <div class="text-[11px] text-slate-500">Pipeline &amp; Keuangan</div>
           </div>
         </div>
       </div>
-      <nav class="p-2 space-y-1 flex-1" id="desktopNav"></nav>
-      <div class="p-3 m-2 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-600">
-        <div class="font-semibold text-slate-800 mb-1">Alur Singkat:</div>
-        CS → Admin Input (Sumber + Brand) → Divisi Kerjakan → Selesai &amp; Invoice → Bayar (+ Bukti)
+      <nav class="p-2.5 space-y-1 flex-1" id="desktopNav"></nav>
+      <div class="p-3 m-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 leading-relaxed">
+        <div class="font-semibold text-slate-800 mb-0.5">Alur Kerja:</div>
+        CS → Admin Input → On Proses → Selesai &amp; Invoice → Bayar (+ Bukti)
       </div>
     </aside>
 
@@ -83,8 +105,8 @@
       <!-- Mobile Header -->
       <header class="md:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded bg-[#0B192C] text-[#D4AF37] font-bold flex items-center justify-center text-xs">SGI</div>
-          <span class="font-bold text-sm">CRM SGI (Mockup)</span>
+          <div class="w-8 h-8 rounded-lg bg-[#0B192C] text-[#D4AF37] font-bold flex items-center justify-center text-xs">SGI</div>
+          <span class="font-bold text-sm text-[#0B192C]">CRM SGI</span>
         </div>
         <select id="mobileNav" onchange="switchTab(this.value)" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm font-medium bg-white"></select>
       </header>
@@ -95,11 +117,11 @@
   </div>
 
   <!-- Toast -->
-  <div id="toast" class="fixed bottom-4 right-4 z-50 hidden bg-[#0B192C] text-white text-sm px-4 py-2.5 rounded-lg shadow-lg border border-[#D4AF37]/40"></div>
+  <div id="toast" class="fixed bottom-4 right-4 z-50 hidden bg-[#0B192C] text-white text-sm px-4 py-2.5 rounded-xl shadow-lg border border-[#D4AF37]/40"></div>
 
   <!-- Modal Tambah Klien -->
   <div id="clientModal" class="fixed inset-0 z-40 hidden bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white rounded-xl max-w-lg w-full shadow-xl overflow-hidden my-auto">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto">
       <div class="px-5 py-3.5 bg-[#0B192C] text-white flex items-center justify-between">
         <h3 class="font-bold text-sm">Input Klien Baru (Dari CS)</h3>
         <button onclick="closeModal('clientModal')" class="text-slate-300 hover:text-white text-lg leading-none">&times;</button>
@@ -180,9 +202,9 @@
     </div>
   </div>
 
-  <!-- Modal Buat / Edit Invoice (Based on CRM V2) -->
+  <!-- Modal Buat / Edit Invoice -->
   <div id="invoiceFormModal" class="fixed inset-0 z-40 hidden bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white rounded-xl max-w-2xl w-full shadow-xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
       <div class="px-5 py-3.5 bg-[#0B192C] text-white flex items-center justify-between shrink-0">
         <h3 class="font-bold text-sm">Detail Invoice (Pengirim, Alamat Brand &amp; Tagihan)</h3>
         <button onclick="closeModal('invoiceFormModal')" class="text-slate-300 hover:text-white text-lg leading-none">&times;</button>
@@ -205,8 +227,7 @@
           </div>
         </div>
 
-        <!-- Pengirim & Brand -->
-        <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200 space-y-3">
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
           <div class="text-xs font-bold text-[#0B192C] uppercase">Identitas Pengirim &amp; Brand</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -228,7 +249,6 @@
           </div>
         </div>
 
-        <!-- Rincian Layanan -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="sm:col-span-2">
             <label class="block text-xs font-semibold text-slate-600 mb-1">Deskripsi Layanan *</label>
@@ -254,7 +274,7 @@
 
   <!-- Modal Pratinjau & Download PDF Invoice -->
   <div id="invoicePreviewModal" class="fixed inset-0 z-50 hidden bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-slate-100 rounded-xl max-w-3xl w-full shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col">
+    <div class="bg-slate-100 rounded-2xl max-w-3xl w-full shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col">
       <div class="px-5 py-3 bg-[#0B192C] text-white flex flex-wrap items-center justify-between gap-2 shrink-0">
         <h3 class="font-bold text-sm">Pratinjau Invoice (Siap Download PDF)</h3>
         <div class="flex items-center gap-2">
@@ -275,14 +295,14 @@
 
   <!-- Modal Catat Pembayaran (Wajib Evidence) -->
   <div id="payModal" class="fixed inset-0 z-40 hidden bg-black/50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl max-w-md w-full shadow-xl overflow-hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
       <div class="px-5 py-3.5 bg-[#0B192C] text-white flex items-center justify-between">
         <h3 class="font-bold text-sm">Catat Pembayaran (+ Wajib Bukti)</h3>
         <button onclick="closeModal('payModal')" class="text-slate-300 hover:text-white text-lg leading-none">&times;</button>
       </div>
       <form onsubmit="savePayment(event)" class="p-5 space-y-3 text-sm">
         <input type="hidden" id="pClientId" />
-        <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
           <div class="font-bold text-slate-900" id="pClientName">-</div>
           <div class="text-xs text-slate-600 mt-0.5" id="pClientSummary">-</div>
         </div>
@@ -295,10 +315,10 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Upload Evidence / Bukti Transfer *</label>
-          <div class="border-2 border-dashed border-slate-300 rounded-lg p-3 text-center space-y-2">
+          <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 text-center space-y-2">
             <input id="pFile" type="file" accept="image/*,.pdf" onchange="handleEvidenceFile(this)" class="block w-full text-xs text-slate-600" />
             <div class="text-[11px] text-slate-500">atau untuk coba cepat di mockup:</div>
-            <button type="button" onclick="useDummyEvidence()" class="text-xs px-2.5 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium hover:bg-emerald-100">
+            <button type="button" onclick="useDummyEvidence()" class="text-xs px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium hover:bg-emerald-100">
               Pakai Contoh Bukti Transfer
             </button>
             <div id="pEvidencePreview" class="hidden text-xs font-semibold text-emerald-700 bg-emerald-50 p-1.5 rounded"></div>
@@ -316,7 +336,7 @@
 
   <!-- Modal Tambah Mitra -->
   <div id="mitraModal" class="fixed inset-0 z-40 hidden bg-black/50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl max-w-md w-full shadow-xl overflow-hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
       <div class="px-5 py-3.5 bg-[#0B192C] text-white flex items-center justify-between">
         <h3 class="font-bold text-sm">Tambah Mitra Baru</h3>
         <button onclick="closeModal('mitraModal')" class="text-slate-300 hover:text-white text-lg leading-none">&times;</button>
@@ -347,7 +367,7 @@
   </div>
 
 <script>
-const STORAGE_KEY = 'sgi_crm_mockup_v3_r6';
+const STORAGE_KEY = 'sgi_crm_mockup_v3_r7';
 
 const BRANDS = [
   'Summitech Global Indo',
@@ -394,7 +414,6 @@ const BANK_OPTIONS = [
   'BRI 0092-01-001670-566 a.n. PT SUMMITECH GLOBAL INDO'
 ];
 
-// Daftar layanan lengkap sesuai CORPORATE_PRODUCTS di CRM V2
 const SERVICES = [
   { name: 'PT Perseroan', price: 3500000, details: 'Pengecekan & Booking Nama PT • Akta Notaris • SK Kemenkumham (AHU) • NPWP Badan & SKT • NIB OSS-RBA' },
   { name: 'PT PMA', price: 9000000, details: 'Akta Notaris & SK Kemenkumham PMA • Alur Izin Investasi BKPM / OSS-RBA • NPWP Badan PMA' },
@@ -426,31 +445,41 @@ const SERVICES = [
   { name: 'Dll', price: 0, details: 'Layanan legalitas / perizinan lainnya' }
 ];
 
+function daysAgoISO(d) {
+  return new Date(Date.now() - d * 86400000).toISOString().slice(0, 10);
+}
+
 const DEFAULT_DATA = {
   tab: 'dashboard',
   mitras: [
-    { id: 'MITRA-001', name: 'Budi Santoso (Konsultan)', brand: 'SGI Indonesia', phone: '08129000111' },
-    { id: 'MITRA-002', name: 'Notaris Rina Partner', brand: 'Summitech Global Indo', phone: '08138000222' }
+    { id: 'MITRA-001', name: 'BUDI SANTOSO (KONSULTAN)', brand: 'SGI Indonesia', phone: '08129000111' },
+    { id: 'MITRA-002', name: 'NOTARIS RINA PARTNER', brand: 'Summitech Global Indo', phone: '08138000222' }
   ],
   clients: [
-    { id: 'ORD-01', name: 'PT Nusantara Sejahtera (Contoh)', phone: '081211112222', city: 'Tangerang', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'PT Perseroan', price: 3500000, paid: 3500000, evidence: 'bukti_tf_01.jpg', workStatus: 'Selesai', invoiceNo: 'INV-LP-202611-001', notes: 'Lunas via BCA', invMeta: null },
-    { id: 'ORD-02', name: 'PT Karya Mandiri (Contoh)', phone: '081233334444', city: 'Jakarta', source: 'Mitra', brand: 'SGI Indonesia', mitraId: 'MITRA-001', service: 'PT Perseroan', price: 3500000, paid: 2000000, evidence: 'bukti_dp_02.jpg', workStatus: 'On Proses', invoiceNo: 'INV-SG-202611-002', notes: 'Sudah DP 2jt, sisa 1,5jt saat selesai', invMeta: null },
-    { id: 'ORD-03', name: 'CV Berkah Abadi (Contoh)', phone: '081255556666', city: 'Bekasi', source: 'Iklan', brand: 'Legal Express Indonesia', mitraId: '', service: 'CV', price: 2500000, paid: 1000000, evidence: 'bukti_dp_03.jpg', workStatus: 'Selesai', invoiceNo: 'INV-LX-202611-003', notes: 'Kerjaan beres, tinggal tagih pelunasan', invMeta: null },
-    { id: 'ORD-04', name: 'Andi Wijaya (Contoh)', phone: '081277778888', city: 'Tangerang', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'Npwp Perorangan', price: 250000, paid: 0, evidence: '', workStatus: 'Selesai', invoiceNo: 'INV-LP-202611-004', notes: 'NPWP jadi, klien susah dihubungi!', invMeta: null },
-    { id: 'ORD-05', name: 'Toko Sinar Baru (Contoh)', phone: '081299990000', city: 'Sukabumi', source: 'Iklan', brand: 'Legal Express Indonesia', mitraId: '', service: 'Nib Badan', price: 500000, paid: 0, evidence: '', workStatus: 'Selesai', invoiceNo: 'INV-LX-202611-005', notes: 'NIB terbit, belum transfer', invMeta: null },
-    { id: 'ORD-06', name: 'Yayasan Harapan Bangsa (Contoh)', phone: '081312123434', city: 'Jakarta', source: 'Mitra', brand: 'Summitech Global Indo', mitraId: 'MITRA-002', service: 'Yayasan', price: 4000000, paid: 4000000, evidence: 'bukti_tf_06.jpg', workStatus: 'Selesai', invoiceNo: 'INV-SM-202611-006', notes: 'Lunas', invMeta: null },
-    { id: 'ORD-07', name: 'Rudi Hartono (Contoh)', phone: '081345456767', city: 'Tangerang', source: 'Iklan', brand: 'SGI Indonesia', mitraId: '', service: 'Npwp Badan', price: 500000, paid: 500000, evidence: 'bukti_tf_07.jpg', workStatus: 'Selesai', invoiceNo: 'INV-SG-202611-007', notes: 'Langsung lunas', invMeta: null },
-    { id: 'ORD-08', name: 'Calon Klien A (Contoh)', phone: '081389891010', city: 'Jakarta', source: 'Iklan', brand: 'Legalio Business Partners', mitraId: '', service: 'PT Perseroan', price: 3500000, paid: 0, evidence: '', workStatus: 'Prospek', invoiceNo: '', notes: 'Baru tanya-tanya di WA', invMeta: null },
-    { id: 'ORD-09', name: 'Calon Klien B (Contoh)', phone: '081311223344', city: 'Bekasi', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'Nib Badan', price: 500000, paid: 0, evidence: '', workStatus: 'Prospek', invoiceNo: '', notes: 'Belum isi template CS', invMeta: null },
-    { id: 'ORD-10', name: 'Calon Klien C (Contoh)', phone: '081355667788', city: 'Tangerang', source: 'Mitra', brand: 'Akura Mokoo Indonesia', mitraId: 'MITRA-001', service: 'Layanan Virtual Office', price: 2500000, paid: 2500000, evidence: 'bukti_tf_10.jpg', workStatus: 'Selesai', invoiceNo: 'INV-VO-202611-010', notes: 'Lunas 1 tahun', invMeta: null }
+    { id: 'ORD-01', date: daysAgoISO(12), name: 'PT NUSANTARA SEJAHTERA (CONTOH)', phone: '081211112222', city: 'Tangerang', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'PT Perseroan', price: 3500000, paid: 3500000, evidence: 'bukti_tf_01.jpg', workStatus: 'Selesai', invoiceNo: 'INV-LP-202611-001', noInvoice: false, notes: 'Lunas via BCA', invMeta: null },
+    { id: 'ORD-02', date: daysAgoISO(10), name: 'PT KARYA MANDIRI (CONTOH)', phone: '081233334444', city: 'Jakarta', source: 'Mitra', brand: 'SGI Indonesia', mitraId: 'MITRA-001', service: 'PT Perseroan', price: 3500000, paid: 2000000, evidence: 'bukti_dp_02.jpg', workStatus: 'On Proses', invoiceNo: 'INV-SG-202611-002', noInvoice: false, notes: 'Sudah DP 2jt, sisa 1,5jt saat selesai', invMeta: null },
+    { id: 'ORD-03', date: daysAgoISO(8), name: 'CV BERKAH ABADI (CONTOH)', phone: '081255556666', city: 'Bekasi', source: 'Iklan', brand: 'Legal Express Indonesia', mitraId: '', service: 'CV', price: 2500000, paid: 1000000, evidence: 'bukti_dp_03.jpg', workStatus: 'Selesai', invoiceNo: 'INV-LX-202611-003', noInvoice: false, notes: 'Kerjaan beres, tinggal tagih pelunasan', invMeta: null },
+    { id: 'ORD-04', date: daysAgoISO(6), name: 'ANDI WIJAYA (CONTOH)', phone: '081277778888', city: 'Tangerang', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'Npwp Perorangan', price: 250000, paid: 0, evidence: '', workStatus: 'Selesai', invoiceNo: '', noInvoice: true, notes: 'NPWP jadi, klien susah dihubungi!', invMeta: null },
+    { id: 'ORD-05', date: daysAgoISO(5), name: 'TOKO SINAR BARU (CONTOH)', phone: '081299990000', city: 'Sukabumi', source: 'Iklan', brand: 'Legal Express Indonesia', mitraId: '', service: 'Nib Badan', price: 500000, paid: 0, evidence: '', workStatus: 'Selesai', invoiceNo: 'INV-LX-202611-005', noInvoice: false, notes: 'NIB terbit, belum transfer', invMeta: null },
+    { id: 'ORD-06', date: daysAgoISO(4), name: 'YAYASAN HARAPAN BANGSA (CONTOH)', phone: '081312123434', city: 'Jakarta', source: 'Mitra', brand: 'Summitech Global Indo', mitraId: 'MITRA-002', service: 'Yayasan', price: 4000000, paid: 4000000, evidence: 'bukti_tf_06.jpg', workStatus: 'Selesai', invoiceNo: 'INV-SM-202611-006', noInvoice: false, notes: 'Lunas', invMeta: null },
+    { id: 'ORD-07', date: daysAgoISO(3), name: 'RUDI HARTONO (CONTOH)', phone: '081345456767', city: 'Tangerang', source: 'Iklan', brand: 'SGI Indonesia', mitraId: '', service: 'Npwp Badan', price: 500000, paid: 500000, evidence: 'bukti_tf_07.jpg', workStatus: 'Selesai', invoiceNo: '', noInvoice: true, notes: 'Langsung lunas tanpa invoice', invMeta: null },
+    { id: 'ORD-08', date: daysAgoISO(2), name: 'CALON KLIEN A (CONTOH)', phone: '081389891010', city: 'Jakarta', source: 'Iklan', brand: 'Legalio Business Partners', mitraId: '', service: 'PT Perseroan', price: 3500000, paid: 0, evidence: '', workStatus: 'Prospek', invoiceNo: '', noInvoice: false, notes: 'Baru tanya-tanya di WA', invMeta: null },
+    { id: 'ORD-09', date: daysAgoISO(1), name: 'CALON KLIEN B (CONTOH)', phone: '081311223344', city: 'Bekasi', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'Nib Badan', price: 500000, paid: 0, evidence: '', workStatus: 'Prospek', invoiceNo: '', noInvoice: false, notes: 'Belum isi template CS', invMeta: null },
+    { id: 'ORD-10', date: daysAgoISO(0), name: 'PT AKURA MAJU (CONTOH)', phone: '081355667788', city: 'Tangerang', source: 'Mitra', brand: 'Akura Mokoo Indonesia', mitraId: 'MITRA-001', service: 'Layanan Virtual Office', price: 2500000, paid: 2500000, evidence: 'bukti_tf_10.jpg', workStatus: 'Selesai', invoiceNo: 'INV-VO-202611-010', noInvoice: false, notes: 'Lunas 1 tahun', invMeta: null }
   ]
 };
 
 let state = loadState();
 let clientFilter = 'Semua';
 let invoiceFilter = 'Semua';
+let dashSourceFilter = 'Semua';
+let dashBrandFilter = 'Semua';
+let dashRangeFilter = '14';
+let dashConvTab = 'brand';
+let lineChartMode = 'cash'; // 'cash' | 'count'
 let pendingEvidence = '';
 let activePreviewId = null;
+let chartInstances = {};
 
 function initDropdowns() {
   const brandOpts = BRANDS.map(b => `<option value="${b}">${b}</option>`).join('');
@@ -477,6 +506,9 @@ function saveState() {
 
 function resetDemo() {
   state = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  dashSourceFilter = 'Semua';
+  dashBrandFilter = 'Semua';
+  dashRangeFilter = '14';
   saveState();
   render();
   showToast('Data contoh dikembalikan ke awal');
@@ -490,6 +522,12 @@ function switchTab(t) {
 
 function fmtRp(n) {
   return 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+}
+
+function fmtShortRp(n) {
+  if (n >= 1000000) return 'Rp ' + (n / 1000000).toFixed(1).replace('.0', '') + ' jt';
+  if (n >= 1000) return 'Rp ' + Math.round(n / 1000) + ' rb';
+  return 'Rp ' + n;
 }
 
 function mitraName(id) {
@@ -534,7 +572,7 @@ function renderNav() {
     { id: 'mitra', label: '4. Mitra' },
   ];
   document.getElementById('desktopNav').innerHTML = items.map(it => `
-    <button onclick="switchTab('${it.id}')" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition ${state.tab === it.id ? 'nav-active' : 'text-slate-700 hover:bg-slate-100'}">
+    <button onclick="switchTab('${it.id}')" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${state.tab === it.id ? 'nav-active' : 'text-slate-700 hover:bg-slate-100'}">
       ${it.label}
     </button>
   `).join('');
@@ -542,8 +580,20 @@ function renderNav() {
   mNav.innerHTML = items.map(it => `<option value="${it.id}" ${state.tab === it.id ? 'selected' : ''}>${it.label}</option>`).join('');
 }
 
+function getFilteredDashboardClients() {
+  const days = dashRangeFilter === 'all' ? 9999 : Number(dashRangeFilter);
+  const cutoff = daysAgoISO(days - 1);
+  return state.clients.filter(c => {
+    if (c.workStatus === 'Batal') return false;
+    if (dashRangeFilter !== 'all' && (c.date || daysAgoISO(0)) < cutoff) return false;
+    if (dashSourceFilter !== 'Semua' && c.source !== dashSourceFilter) return false;
+    if (dashBrandFilter !== 'Semua' && c.brand !== dashBrandFilter) return false;
+    return true;
+  });
+}
+
 function renderDashboard() {
-  const active = state.clients.filter(c => c.workStatus !== 'Batal');
+  const active = getFilteredDashboardClients();
   const totalMasuk = active.reduce((s, c) => s + c.paid, 0);
   const stuckClients = active.filter(c => (c.workStatus === 'On Proses' || c.workStatus === 'Selesai') && c.paid < c.price);
   const totalUnpaid = stuckClients.reduce((s, c) => s + (c.price - c.paid), 0);
@@ -558,7 +608,8 @@ function renderDashboard() {
     const paidList = list.filter(c => c.paid > 0);
     const pct = list.length ? Math.round((paidList.length / list.length) * 100) : 0;
     const cash = list.reduce((s, c) => s + c.paid, 0);
-    return { src, total: list.length, paidCount: paidList.length, pct, cash };
+    const unpaid = list.reduce((s, c) => s + Math.max(0, c.price - c.paid), 0);
+    return { label: src, total: list.length, paidCount: paidList.length, pct, cash, unpaid };
   });
 
   const byBrand = BRANDS.map(b => {
@@ -566,180 +617,389 @@ function renderDashboard() {
     const paidList = list.filter(c => c.paid > 0);
     const pct = list.length ? Math.round((paidList.length / list.length) * 100) : 0;
     const cash = list.reduce((s, c) => s + c.paid, 0);
-    return { brand: b, total: list.length, paidCount: paidList.length, pct, cash };
+    const unpaid = list.reduce((s, c) => s + Math.max(0, c.price - c.paid), 0);
+    return { label: b, total: list.length, paidCount: paidList.length, pct, cash, unpaid };
   }).filter(x => x.total > 0);
 
   const svcMap = {};
   active.forEach(c => {
-    if (!svcMap[c.service]) svcMap[c.service] = { svc: c.service, total: 0, paidCount: 0, cash: 0 };
+    if (!svcMap[c.service]) svcMap[c.service] = { label: c.service, total: 0, paidCount: 0, cash: 0, unpaid: 0 };
     svcMap[c.service].total++;
     if (c.paid > 0) svcMap[c.service].paidCount++;
     svcMap[c.service].cash += c.paid;
+    svcMap[c.service].unpaid += Math.max(0, c.price - c.paid);
   });
-  const byService = Object.values(svcMap).sort((a, b) => b.total - a.total);
+  const byService = Object.values(svcMap).map(x => ({
+    ...x,
+    pct: x.total ? Math.round((x.paidCount / x.total) * 100) : 0
+  })).sort((a, b) => b.total - a.total);
+
+  const convRows = dashConvTab === 'source' ? bySource : dashConvTab === 'service' ? byService : byBrand;
 
   return `
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <h1 class="text-xl font-bold text-[#0B192C]">Dashboard Ringkas</h1>
-        <p class="text-xs text-slate-500">Pantau pembayaran diterima, tagihan belum lunas, pengerjaan, dan konversi (patokan: sudah bayar DP/Lunas).</p>
-      </div>
-      <button onclick="openClientModal()" class="px-4 py-2 rounded-lg bg-[#0B192C] text-white text-sm font-semibold hover:opacity-95">+ Input Klien Baru</button>
-    </div>
-
-    <div class="bg-white rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
-      <div class="p-4">
-        <div class="text-xs font-semibold text-slate-500 uppercase">Pembayaran Diterima</div>
-        <div class="text-2xl font-extrabold text-emerald-700 mt-1 tabular">${fmtRp(totalMasuk)}</div>
-        <div class="text-xs text-slate-500 mt-1">Terverifikasi bukti transfer • ${converted.length} klien</div>
-      </div>
-      <div class="p-4 bg-rose-50/40">
-        <div class="text-xs font-semibold text-rose-700 uppercase">Tagihan Belum Lunas</div>
-        <div class="text-2xl font-extrabold text-rose-700 mt-1 tabular">${fmtRp(totalUnpaid)}</div>
-        <div class="text-xs text-rose-600 mt-1">${stuckClients.length} klien belum bayar / sisa DP</div>
-      </div>
-      <div class="p-4">
-        <div class="text-xs font-semibold text-slate-500 uppercase">Sedang On Proses</div>
-        <div class="text-2xl font-extrabold text-[#0B192C] mt-1 tabular">${onProcessCount} Order</div>
-        <div class="text-xs text-slate-500 mt-1">Dikerjakan tim divisi</div>
-      </div>
-      <div class="p-4">
-        <div class="text-xs font-semibold text-slate-500 uppercase">Konversi Keseluruhan</div>
-        <div class="text-2xl font-extrabold text-[#0B192C] mt-1 tabular">${convPct}%</div>
-        <div class="text-xs text-slate-500 mt-1">${converted.length} bayar dari ${totalLeads} prospek masuk</div>
-      </div>
-    </div>
-
-    <div class="bg-white rounded-xl border border-rose-200 overflow-hidden">
-      <div class="px-4 py-3 bg-rose-50 border-b border-rose-200 flex flex-wrap items-center justify-between gap-2">
+    <div class="animate-in space-y-5">
+      <!-- Header + Filter Interaktif -->
+      <div class="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 class="font-bold text-sm text-rose-900">Daftar Tagihan Belum Lunas (Belum Bayar / Sisa DP)</h2>
-          <p class="text-xs text-rose-700">Klien yang pekerjaannya sudah berjalan/selesai namun pembayarannya belum lunas.</p>
+          <h1 class="text-xl font-extrabold text-[#0B192C] tracking-tight">Dashboard Ringkas</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Klik filter di bawah untuk melihat tren, konversi, dan tagihan secara real-time.</p>
         </div>
-        <button onclick="invoiceFilter='Belum Bayar'; switchTab('invoices')" class="text-xs font-semibold text-rose-800 underline">Buka di Menu Invoice →</button>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm text-left">
-          <thead class="bg-slate-50 text-xs text-slate-500 uppercase border-b border-slate-200">
-            <tr>
-              <th class="px-4 py-2.5">Klien</th>
-              <th class="px-4 py-2.5">Brand &amp; Layanan</th>
-              <th class="px-4 py-2.5">Kerjaan</th>
-              <th class="px-4 py-2.5 text-right">Kurang Bayar</th>
-              <th class="px-4 py-2.5">Catatan</th>
-              <th class="px-4 py-2.5 text-right">Aksi</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            ${stuckClients.length === 0 ? `<tr><td colspan="6" class="px-4 py-6 text-center text-slate-500">Semua tagihan sudah lunas.</td></tr>` : stuckClients.map(c => `
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-2.5 font-semibold text-slate-900">${c.name}<div class="text-xs font-normal text-slate-500">${c.phone}</div></td>
-                <td class="px-4 py-2.5">${c.service}<div class="text-xs text-slate-500">${c.brand}</div></td>
-                <td class="px-4 py-2.5"><span class="whitespace-nowrap px-2 py-0.5 rounded-full text-xs font-medium ${c.workStatus === 'Selesai' ? 'bg-teal-50 text-teal-700' : 'bg-cyan-50 text-cyan-700'}">${c.workStatus}</span></td>
-                <td class="px-4 py-2.5 text-right font-bold text-rose-700 tabular">${fmtRp(c.price - c.paid)}<div class="text-[11px] font-normal text-slate-500">${c.paid > 0 ? 'Sudah DP ' + fmtRp(c.paid) : 'Belum bayar sama sekali'}</div></td>
-                <td class="px-4 py-2.5 text-xs text-slate-600">${c.notes || '-'}</td>
-                <td class="px-4 py-2.5 text-right"><button onclick="openPayModal('${c.id}')" class="px-2.5 py-1 rounded bg-[#0B192C] text-white text-xs font-medium">Catat Bayar</button></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div class="px-4 py-3 border-b border-slate-200">
-          <h2 class="font-bold text-sm text-[#0B192C]">Konversi Per Sumber (Iklan vs Mitra)</h2>
-          <p class="text-xs text-slate-500">Perbandingan hasil dari Iklan dan Mitra</p>
+        <div class="flex flex-wrap items-center gap-2">
+          <select onchange="dashRangeFilter=this.value; render()" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-semibold bg-white">
+            <option value="7" ${dashRangeFilter==='7'?'selected':''}>7 Hari Terakhir</option>
+            <option value="14" ${dashRangeFilter==='14'?'selected':''}>14 Hari Terakhir</option>
+            <option value="30" ${dashRangeFilter==='30'?'selected':''}>30 Hari Terakhir</option>
+            <option value="all" ${dashRangeFilter==='all'?'selected':''}>Semua Waktu</option>
+          </select>
+          <select onchange="dashSourceFilter=this.value; render()" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-semibold bg-white">
+            <option value="Semua" ${dashSourceFilter==='Semua'?'selected':''}>Semua Sumber</option>
+            <option value="Iklan" ${dashSourceFilter==='Iklan'?'selected':''}>Iklan</option>
+            <option value="Mitra" ${dashSourceFilter==='Mitra'?'selected':''}>Mitra</option>
+          </select>
+          <select onchange="dashBrandFilter=this.value; render()" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-semibold bg-white">
+            <option value="Semua" ${dashBrandFilter==='Semua'?'selected':''}>Semua Brand</option>
+            ${BRANDS.map(b => `<option value="${b}" ${dashBrandFilter===b?'selected':''}>${b}</option>`).join('')}
+          </select>
+          <button onclick="openClientModal()" class="px-3.5 py-1.5 rounded-lg bg-[#0B192C] text-white text-xs font-semibold hover:opacity-95">+ Input Klien</button>
         </div>
-        <table class="w-full text-sm">
-          <thead class="bg-slate-50 text-xs text-slate-500 uppercase border-b border-slate-200">
-            <tr>
-              <th class="px-4 py-2 text-left">Sumber</th>
-              <th class="px-4 py-2 text-right">Masuk</th>
-              <th class="px-4 py-2 text-right">Bayar</th>
-              <th class="px-4 py-2 text-right">Konversi</th>
-              <th class="px-4 py-2 text-right">Uang Masuk</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 tabular">
-            ${bySource.map(s => `
-              <tr>
-                <td class="px-4 py-2.5 font-semibold">${s.src}</td>
-                <td class="px-4 py-2.5 text-right">${s.total}</td>
-                <td class="px-4 py-2.5 text-right">${s.paidCount}</td>
-                <td class="px-4 py-2.5 text-right font-bold text-[#0B192C]">${s.pct}%</td>
-                <td class="px-4 py-2.5 text-right text-emerald-700 font-semibold">${fmtRp(s.cash)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
       </div>
 
-      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div class="px-4 py-3 border-b border-slate-200">
-          <h2 class="font-bold text-sm text-[#0B192C]">Konversi Per Brand</h2>
-          <p class="text-xs text-slate-500">Brand mana yang paling banyak masuk &amp; jadi uang</p>
+      <!-- 4 KPI Utama (1 Panel Garis Rambut) -->
+      <div class="bg-white rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
+        <div class="p-4">
+          <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Pembayaran Diterima</div>
+          <div class="text-2xl font-extrabold text-emerald-700 mt-1 tabular tracking-tight">${fmtRp(totalMasuk)}</div>
+          <div class="text-xs text-slate-500 mt-1">Terverifikasi bukti transfer • ${converted.length} klien</div>
         </div>
-        <table class="w-full text-sm">
-          <thead class="bg-slate-50 text-xs text-slate-500 uppercase border-b border-slate-200">
-            <tr>
-              <th class="px-4 py-2 text-left">Nama Brand</th>
-              <th class="px-4 py-2 text-right">Masuk</th>
-              <th class="px-4 py-2 text-right">Bayar</th>
-              <th class="px-4 py-2 text-right">Konversi</th>
-              <th class="px-4 py-2 text-right">Uang Masuk</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 tabular">
-            ${byBrand.map(s => `
-              <tr>
-                <td class="px-4 py-2.5 font-semibold">${s.brand}</td>
-                <td class="px-4 py-2.5 text-right">${s.total}</td>
-                <td class="px-4 py-2.5 text-right">${s.paidCount}</td>
-                <td class="px-4 py-2.5 text-right font-bold text-[#0B192C]">${s.pct}%</td>
-                <td class="px-4 py-2.5 text-right text-emerald-700 font-semibold">${fmtRp(s.cash)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
+        <div class="p-4 bg-rose-50/35">
+          <div class="text-[11px] font-bold text-rose-700 uppercase tracking-wider">Tagihan Belum Lunas</div>
+          <div class="text-2xl font-extrabold text-rose-700 mt-1 tabular tracking-tight">${fmtRp(totalUnpaid)}</div>
+          <div class="text-xs text-rose-600 mt-1">${stuckClients.length} klien belum bayar / sisa DP</div>
+        </div>
+        <div class="p-4">
+          <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Sedang On Proses</div>
+          <div class="text-2xl font-extrabold text-[#0B192C] mt-1 tabular tracking-tight">${onProcessCount} Order</div>
+          <div class="text-xs text-slate-500 mt-1">Dikerjakan tim divisi</div>
+        </div>
+        <div class="p-4">
+          <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Konversi Keseluruhan</div>
+          <div class="text-2xl font-extrabold text-[#0B192C] mt-1 tabular tracking-tight">${convPct}%</div>
+          <div class="text-xs text-slate-500 mt-1">${converted.length} bayar dari ${totalLeads} prospek</div>
+        </div>
       </div>
-    </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-      <div class="px-4 py-3 border-b border-slate-200">
-        <h2 class="font-bold text-sm text-[#0B192C]">Konversi Per Jenis Layanan</h2>
-        <p class="text-xs text-slate-500">Layanan yang paling banyak masuk &amp; jadi uang</p>
+      <!-- Baris Grafik: Line Chart (2/3) + Donut Status Bayar (1/3) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-4 flex flex-col">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div>
+              <h2 class="font-bold text-sm text-[#0B192C]">Tren Harian: Pembayaran &amp; Prospek</h2>
+              <p class="text-xs text-slate-500">Arahkan kursor ke titik grafik untuk melihat detail per tanggal.</p>
+            </div>
+            <div class="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs font-semibold">
+              <button onclick="lineChartMode='cash'; renderDashboardCharts()" id="btnModeCash" class="px-2.5 py-1 rounded-md ${lineChartMode==='cash' ? 'bg-white text-[#0B192C] shadow-sm' : 'text-slate-600'}">Nominal (Rp)</button>
+              <button onclick="lineChartMode='count'; renderDashboardCharts()" id="btnModeCount" class="px-2.5 py-1 rounded-md ${lineChartMode==='count' ? 'bg-white text-[#0B192C] shadow-sm' : 'text-slate-600'}">Jumlah Klien</button>
+            </div>
+          </div>
+          <div class="relative h-64 w-full">
+            <canvas id="trendLineChart"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 flex flex-col">
+          <div class="mb-3">
+            <h2 class="font-bold text-sm text-[#0B192C]">Status Pembayaran Klien</h2>
+            <p class="text-xs text-slate-500">Komposisi order aktif saat ini</p>
+          </div>
+          <div class="relative h-52 w-full flex-1 flex items-center justify-center">
+            <canvas id="statusDonutChart"></canvas>
+          </div>
+        </div>
       </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="bg-slate-50 text-xs text-slate-500 uppercase border-b border-slate-200">
-            <tr>
-              <th class="px-4 py-2 text-left">Layanan</th>
-              <th class="px-4 py-2 text-right">Masuk</th>
-              <th class="px-4 py-2 text-right">Bayar</th>
-              <th class="px-4 py-2 text-right">Konversi</th>
-              <th class="px-4 py-2 text-right">Uang Masuk</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 tabular">
-            ${byService.map(s => {
-              const pct = s.total ? Math.round((s.paidCount / s.total) * 100) : 0;
-              return `
+
+      <!-- Baris Grafik 2: Bar Chart Brand + Tabel Konversi Ber-Tab -->
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-4 flex flex-col">
+          <div class="mb-3">
+            <h2 class="font-bold text-sm text-[#0B192C]">Performa Brand (Masuk vs Belum Lunas)</h2>
+            <p class="text-xs text-slate-500">Bandingkan kas masuk &amp; sisa tagihan per brand</p>
+          </div>
+          <div class="relative h-64 w-full">
+            <canvas id="brandBarChart"></canvas>
+          </div>
+        </div>
+
+        <div class="lg:col-span-3 bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col">
+          <div class="px-4 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="font-bold text-sm text-[#0B192C]">Analisa Konversi</h2>
+              <p class="text-xs text-slate-500">Patokan konversi: klien sudah bayar (DP / Lunas)</p>
+            </div>
+            <div class="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs font-semibold">
+              <button onclick="dashConvTab='brand'; render()" class="px-2.5 py-1 rounded-md ${dashConvTab==='brand' ? 'bg-white text-[#0B192C] shadow-sm' : 'text-slate-600'}">Per Brand</button>
+              <button onclick="dashConvTab='source'; render()" class="px-2.5 py-1 rounded-md ${dashConvTab==='source' ? 'bg-white text-[#0B192C] shadow-sm' : 'text-slate-600'}">Per Sumber</button>
+              <button onclick="dashConvTab='service'; render()" class="px-2.5 py-1 rounded-md ${dashConvTab==='service' ? 'bg-white text-[#0B192C] shadow-sm' : 'text-slate-600'}">Per Layanan</button>
+            </div>
+          </div>
+          <div class="overflow-x-auto flex-1">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 text-[11px] text-slate-500 uppercase border-b border-slate-200">
                 <tr>
-                  <td class="px-4 py-2.5 font-semibold">${s.svc}</td>
-                  <td class="px-4 py-2.5 text-right">${s.total}</td>
-                  <td class="px-4 py-2.5 text-right">${s.paidCount}</td>
-                  <td class="px-4 py-2.5 text-right font-bold text-[#0B192C]">${pct}%</td>
-                  <td class="px-4 py-2.5 text-right text-emerald-700 font-semibold">${fmtRp(s.cash)}</td>
+                  <th class="px-4 py-2 text-left">${dashConvTab==='source'?'Sumber':dashConvTab==='service'?'Layanan':'Brand'}</th>
+                  <th class="px-3 py-2 text-right">Masuk</th>
+                  <th class="px-3 py-2 text-right">Bayar</th>
+                  <th class="px-4 py-2 w-36">Konversi</th>
+                  <th class="px-4 py-2 text-right">Uang Masuk</th>
                 </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
+              </thead>
+              <tbody class="divide-y divide-slate-100 tabular">
+                ${convRows.length === 0 ? `<tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">Tidak ada data pada filter ini.</td></tr>` : convRows.map(r => `
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-2.5 font-semibold text-slate-800">${r.label}</td>
+                    <td class="px-3 py-2.5 text-right">${r.total}</td>
+                    <td class="px-3 py-2.5 text-right">${r.paidCount}</td>
+                    <td class="px-4 py-2.5">
+                      <div class="flex items-center gap-2">
+                        <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div class="h-full bg-[#0B192C] rounded-full" style="width:${r.pct}%"></div>
+                        </div>
+                        <span class="text-xs font-bold text-[#0B192C] w-9 text-right">${r.pct}%</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-2.5 text-right text-emerald-700 font-semibold">${fmtRp(r.cash)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daftar Tagihan Belum Lunas -->
+      <div class="bg-white rounded-2xl border border-rose-200 overflow-hidden">
+        <div class="px-4 py-3 bg-rose-50/70 border-b border-rose-200 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 class="font-bold text-sm text-rose-900">Daftar Tagihan Belum Lunas (Belum Bayar / Sisa DP)</h2>
+            <p class="text-xs text-rose-700">Klien yang pekerjaannya sudah berjalan/selesai namun pembayarannya belum lunas.</p>
+          </div>
+          <button onclick="invoiceFilter='Belum Bayar'; switchTab('invoices')" class="text-xs font-semibold text-rose-800 underline">Buka di Menu Invoice →</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left">
+            <thead class="bg-slate-50 text-[11px] text-slate-500 uppercase border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-2.5">Klien</th>
+                <th class="px-4 py-2.5">Brand &amp; Layanan</th>
+                <th class="px-4 py-2.5">Kerjaan</th>
+                <th class="px-4 py-2.5 text-right">Kurang Bayar</th>
+                <th class="px-4 py-2.5">Catatan</th>
+                <th class="px-4 py-2.5 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              ${stuckClients.length === 0 ? `<tr><td colspan="6" class="px-4 py-6 text-center text-slate-500">Semua tagihan pada filter ini sudah lunas.</td></tr>` : stuckClients.map(c => `
+                <tr class="hover:bg-slate-50">
+                  <td class="px-4 py-2.5 font-semibold text-slate-900">${c.name}<div class="text-xs font-normal text-slate-500">${c.phone}</div></td>
+                  <td class="px-4 py-2.5">${c.service}<div class="text-xs text-slate-500">${c.brand}</div></td>
+                  <td class="px-4 py-2.5"><span class="whitespace-nowrap px-2 py-0.5 rounded-full text-xs font-medium ${c.workStatus === 'Selesai' ? 'bg-teal-50 text-teal-700' : 'bg-cyan-50 text-cyan-700'}">${c.workStatus}</span></td>
+                  <td class="px-4 py-2.5 text-right font-bold text-rose-700 tabular">${fmtRp(c.price - c.paid)}<div class="text-[11px] font-normal text-slate-500">${c.paid > 0 ? 'Sudah bayar ' + fmtRp(c.paid) : 'Belum bayar sama sekali'}</div></td>
+                  <td class="px-4 py-2.5 text-xs text-slate-600">${c.notes || '-'}</td>
+                  <td class="px-4 py-2.5 text-right"><button onclick="openPayModal('${c.id}')" class="px-2.5 py-1 rounded-lg bg-[#0B192C] text-white text-xs font-medium">Catat Bayar</button></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   `;
+}
+
+function destroyCharts() {
+  Object.values(chartInstances).forEach(ch => { try { ch.destroy(); } catch {} });
+  chartInstances = {};
+}
+
+function renderDashboardCharts() {
+  if (state.tab !== 'dashboard' || typeof Chart === 'undefined') return;
+  destroyCharts();
+
+  const active = getFilteredDashboardClients();
+  // Update toggle button styles if triggered directly
+  const bCash = document.getElementById('btnModeCash');
+  const bCount = document.getElementById('btnModeCount');
+  if (bCash && bCount) {
+    bCash.className = 'px-2.5 py-1 rounded-md ' + (lineChartMode === 'cash' ? 'bg-white text-[#0B192C] shadow-sm' : 'text-slate-600');
+    bCount.className = 'px-2.5 py-1 rounded-md ' + (lineChartMode === 'count' ? 'bg-white text-[#0B192C] shadow-sm' : 'text-slate-600');
+  }
+
+  // 1. Line Chart Data by Date
+  const daysCount = dashRangeFilter === 'all' ? 14 : Math.min(30, Number(dashRangeFilter));
+  const labels = [];
+  const cashSeries = [];
+  const unpaidSeries = [];
+  const leadSeries = [];
+  const paidCountSeries = [];
+
+  for (let i = daysCount - 1; i >= 0; i--) {
+    const iso = daysAgoISO(i);
+    const dObj = new Date(iso + 'T00:00:00');
+    labels.push(dObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }));
+    const dayItems = active.filter(c => (c.date || daysAgoISO(0)) === iso);
+    cashSeries.push(dayItems.reduce((s, c) => s + c.paid, 0));
+    unpaidSeries.push(dayItems.reduce((s, c) => s + Math.max(0, c.price - c.paid), 0));
+    leadSeries.push(dayItems.length);
+    paidCountSeries.push(dayItems.filter(c => c.paid > 0).length);
+  }
+
+  const lineCtx = document.getElementById('trendLineChart');
+  if (lineCtx) {
+    chartInstances.line = new Chart(lineCtx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: lineChartMode === 'cash' ? [
+          {
+            label: 'Pembayaran Diterima (Rp)',
+            data: cashSeries,
+            borderColor: '#059669',
+            backgroundColor: 'rgba(5, 150, 105, 0.10)',
+            borderWidth: 2.5,
+            tension: 0.3,
+            fill: true,
+            pointRadius: 3.5,
+            pointHoverRadius: 6
+          },
+          {
+            label: 'Tagihan Belum Lunas (Rp)',
+            data: unpaidSeries,
+            borderColor: '#E11D48',
+            backgroundColor: 'rgba(225, 29, 72, 0.06)',
+            borderWidth: 2,
+            borderDash: [5, 4],
+            tension: 0.3,
+            fill: false,
+            pointRadius: 3,
+            pointHoverRadius: 5
+          }
+        ] : [
+          {
+            label: 'Prospek Masuk (Klien)',
+            data: leadSeries,
+            borderColor: '#0B192C',
+            backgroundColor: 'rgba(11, 25, 44, 0.08)',
+            borderWidth: 2.5,
+            tension: 0.3,
+            fill: true,
+            pointRadius: 3.5,
+            pointHoverRadius: 6
+          },
+          {
+            label: 'Sudah Bayar (Klien)',
+            data: paidCountSeries,
+            borderColor: '#D4AF37',
+            backgroundColor: 'rgba(212, 175, 55, 0.15)',
+            borderWidth: 2.5,
+            tension: 0.3,
+            fill: false,
+            pointRadius: 3.5,
+            pointHoverRadius: 6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 10, font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => lineChartMode === 'cash'
+                ? `${ctx.dataset.label}: ${fmtRp(ctx.raw)}`
+                : `${ctx.dataset.label}: ${ctx.raw} klien`
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+          y: {
+            beginAtZero: true,
+            grid: { color: '#F1F5F9' },
+            ticks: {
+              font: { size: 11 },
+              callback: (v) => lineChartMode === 'cash' ? fmtShortRp(v) : v
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // 2. Donut Chart Status Bayar
+  const cntLunas = active.filter(c => payStatusOf(c) === 'Lunas').length;
+  const cntSebagian = active.filter(c => payStatusOf(c) === 'Sebagian').length;
+  const cntBelum = active.filter(c => payStatusOf(c) === 'Belum Bayar').length;
+  const donutCtx = document.getElementById('statusDonutChart');
+  if (donutCtx) {
+    chartInstances.donut = new Chart(donutCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Lunas', 'Sebagian (DP)', 'Belum Bayar'],
+        datasets: [{
+          data: [cntLunas, cntSebagian, cntBelum],
+          backgroundColor: ['#059669', '#D97706', '#E11D48'],
+          borderWidth: 2,
+          borderColor: '#FFFFFF'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '64%',
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 11 } } }
+        }
+      }
+    });
+  }
+
+  // 3. Bar Chart Brand
+  const brandStats = BRANDS.map(b => {
+    const list = active.filter(c => c.brand === b);
+    return {
+      short: b.replace(' Indonesia', '').replace(' Business Partners', ''),
+      cash: list.reduce((s, c) => s + c.paid, 0),
+      unpaid: list.reduce((s, c) => s + Math.max(0, c.price - c.paid), 0)
+    };
+  }).filter(x => x.cash > 0 || x.unpaid > 0);
+
+  const barCtx = document.getElementById('brandBarChart');
+  if (barCtx) {
+    chartInstances.bar = new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: brandStats.map(x => x.short),
+        datasets: [
+          { label: 'Diterima', data: brandStats.map(x => x.cash), backgroundColor: '#0B192C', borderRadius: 4 },
+          { label: 'Belum Lunas', data: brandStats.map(x => x.unpaid), backgroundColor: '#FDA4AF', borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: {
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 10, font: { size: 11 } } },
+          tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtRp(ctx.raw)}` } }
+        },
+        scales: {
+          x: { beginAtZero: true, grid: { color: '#F1F5F9' }, ticks: { font: { size: 10 }, callback: (v) => fmtShortRp(v) } },
+          y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+        }
+      }
+    });
+  }
 }
 
 function renderClients() {
@@ -747,67 +1007,69 @@ function renderClients() {
   const list = state.clients.filter(c => clientFilter === 'Semua' || c.workStatus === clientFilter);
 
   return `
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <h1 class="text-xl font-bold text-[#0B192C]">Klien &amp; Pengerjaan Divisi</h1>
-        <p class="text-xs text-slate-500">Input dari CS (Sumber, Brand, Mitra, 28 Jenis Layanan, Harga), pantau pengerjaan divisi.</p>
+    <div class="animate-in space-y-5">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 class="text-xl font-extrabold text-[#0B192C] tracking-tight">Klien &amp; Pengerjaan Divisi</h1>
+          <p class="text-xs text-slate-500">Input dari CS (Sumber, Brand, Mitra, 28 Jenis Layanan, Harga), pantau pengerjaan divisi.</p>
+        </div>
+        <button onclick="openClientModal()" class="px-4 py-2 rounded-lg bg-[#0B192C] text-white text-sm font-semibold">+ Input Klien Baru</button>
       </div>
-      <button onclick="openClientModal()" class="px-4 py-2 rounded-lg bg-[#0B192C] text-white text-sm font-semibold">+ Input Klien Baru</button>
-    </div>
 
-    <div class="flex flex-wrap gap-2">
-      ${statuses.map(st => `
-        <button onclick="clientFilter='${st}'; render()" class="px-3 py-1.5 rounded-lg text-xs font-semibold border ${clientFilter === st ? 'bg-[#0B192C] text-white border-[#0B192C]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}">
-          ${st}
-        </button>
-      `).join('')}
-    </div>
+      <div class="flex flex-wrap gap-2">
+        ${statuses.map(st => `
+          <button onclick="clientFilter='${st}'; render()" class="px-3 py-1.5 rounded-lg text-xs font-semibold border ${clientFilter === st ? 'bg-[#0B192C] text-white border-[#0B192C]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}">
+            ${st}
+          </button>
+        `).join('')}
+      </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 overflow-x-auto">
-      <table class="w-full text-sm text-left">
-        <thead class="bg-slate-50 text-xs text-slate-500 uppercase border-b border-slate-200">
-          <tr>
-            <th class="px-4 py-2.5">Klien</th>
-            <th class="px-4 py-2.5">Sumber &amp; Brand</th>
-            <th class="px-4 py-2.5">Layanan &amp; Harga</th>
-            <th class="px-4 py-2.5">Status Pengerjaan</th>
-            <th class="px-4 py-2.5">Status Bayar</th>
-            <th class="px-4 py-2.5 text-right">Aksi Cepat</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100">
-          ${list.map(c => {
-            const ps = payStatusOf(c);
-            const psBadge = ps === 'Lunas' ? 'bg-emerald-50 text-emerald-700' : ps === 'Sebagian' ? 'bg-amber-50 text-amber-800' : ps === 'Batal' ? 'bg-slate-100 text-slate-500' : 'bg-rose-50 text-rose-700';
-            return `
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-2.5 font-semibold">${c.name}<div class="text-xs font-normal text-slate-500">${c.phone}${c.city ? ' • ' + c.city : ''}</div></td>
-                <td class="px-4 py-2.5 text-xs">
-                  <span class="font-semibold text-slate-800">${c.source}</span>${c.source === 'Mitra' ? ` (${mitraName(c.mitraId)})` : ''}
-                  <div class="text-slate-500">Brand: ${c.brand}</div>
-                </td>
-                <td class="px-4 py-2.5">${c.service}<div class="text-xs font-semibold text-slate-700 tabular">${fmtRp(c.price)}</div></td>
-                <td class="px-4 py-2.5">
-                  <select onchange="changeWorkStatus('${c.id}', this.value)" class="border border-slate-300 rounded px-2 py-1 text-xs bg-white font-medium">
-                    ${['Prospek', 'On Proses', 'Selesai', 'Batal'].map(s => `<option value="${s}" ${c.workStatus === s ? 'selected' : ''}>${s}</option>`).join('')}
-                  </select>
-                </td>
-                <td class="px-4 py-2.5">
-                  <span class="badge-dot whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-semibold ${psBadge}">${ps}</span>
-                </td>
-                <td class="px-4 py-2.5 text-right space-x-1 whitespace-nowrap">
-                  ${c.workStatus !== 'Batal' ? (
-                    c.noInvoice
-                      ? `<button onclick="toggleNoInvoice('${c.id}')" class="px-2.5 py-1 rounded bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200" title="Klik jika jadi pakai invoice">Tanpa Invoice</button>`
-                      : `<button onclick="openInvoiceForm('${c.id}')" class="px-2.5 py-1 rounded border border-slate-300 text-xs font-medium hover:bg-slate-100">${c.invoiceNo ? 'Edit Invoice' : 'Buat Invoice'}</button>${!c.invoiceNo ? `<button onclick="toggleNoInvoice('${c.id}')" class="px-2 py-1 rounded border border-slate-200 text-slate-500 text-xs hover:bg-slate-100">Tdk Pakai Inv</button>` : ''}`
-                  ) : ''}
-                  ${ps !== 'Lunas' && ps !== 'Batal' ? `<button onclick="openPayModal('${c.id}')" class="px-2.5 py-1 rounded bg-[#0B192C] text-white text-xs font-medium">Catat Bayar</button>` : ''}
-                </td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-slate-50 text-[11px] text-slate-500 uppercase border-b border-slate-200">
+            <tr>
+              <th class="px-4 py-2.5">Klien</th>
+              <th class="px-4 py-2.5">Sumber &amp; Brand</th>
+              <th class="px-4 py-2.5">Layanan &amp; Harga</th>
+              <th class="px-4 py-2.5">Status Pengerjaan</th>
+              <th class="px-4 py-2.5">Status Bayar</th>
+              <th class="px-4 py-2.5 text-right">Aksi Cepat</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            ${list.map(c => {
+              const ps = payStatusOf(c);
+              const psBadge = ps === 'Lunas' ? 'bg-emerald-50 text-emerald-700' : ps === 'Sebagian' ? 'bg-amber-50 text-amber-800' : ps === 'Batal' ? 'bg-slate-100 text-slate-500' : 'bg-rose-50 text-rose-700';
+              return `
+                <tr class="hover:bg-slate-50">
+                  <td class="px-4 py-2.5 font-semibold">${c.name}<div class="text-xs font-normal text-slate-500">${c.phone}${c.city ? ' • ' + c.city : ''}</div></td>
+                  <td class="px-4 py-2.5 text-xs">
+                    <span class="font-semibold text-slate-800">${c.source}</span>${c.source === 'Mitra' ? ` (${mitraName(c.mitraId)})` : ''}
+                    <div class="text-slate-500">Brand: ${c.brand}</div>
+                  </td>
+                  <td class="px-4 py-2.5">${c.service}<div class="text-xs font-semibold text-slate-700 tabular">${fmtRp(c.price)}</div></td>
+                  <td class="px-4 py-2.5">
+                    <select onchange="changeWorkStatus('${c.id}', this.value)" class="border border-slate-300 rounded-lg px-2 py-1 text-xs bg-white font-medium">
+                      ${['Prospek', 'On Proses', 'Selesai', 'Batal'].map(s => `<option value="${s}" ${c.workStatus === s ? 'selected' : ''}>${s}</option>`).join('')}
+                    </select>
+                  </td>
+                  <td class="px-4 py-2.5">
+                    <span class="badge-dot whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-semibold ${psBadge}">${ps}</span>
+                  </td>
+                  <td class="px-4 py-2.5 text-right space-x-1 whitespace-nowrap">
+                    ${c.workStatus !== 'Batal' ? (
+                      c.noInvoice
+                        ? `<button onclick="toggleNoInvoice('${c.id}')" class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200" title="Klik jika jadi pakai invoice">Tanpa Invoice</button>`
+                        : `<button onclick="openInvoiceForm('${c.id}')" class="px-2.5 py-1 rounded-lg border border-slate-300 text-xs font-medium hover:bg-slate-100">${c.invoiceNo ? 'Edit Invoice' : 'Buat Invoice'}</button>${!c.invoiceNo ? `<button onclick="toggleNoInvoice('${c.id}')" class="px-2 py-1 rounded-lg border border-slate-200 text-slate-500 text-xs hover:bg-slate-100">Tdk Pakai Inv</button>` : ''}`
+                    ) : ''}
+                    ${ps !== 'Lunas' && ps !== 'Batal' ? `<button onclick="openPayModal('${c.id}')" class="px-2.5 py-1 rounded-lg bg-[#0B192C] text-white text-xs font-medium">Catat Bayar</button>` : ''}
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
     </div>
   `;
 }
@@ -824,112 +1086,118 @@ function renderInvoices() {
   });
 
   return `
-    <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="animate-in space-y-5">
       <div>
-        <h1 class="text-xl font-bold text-[#0B192C]">Invoice &amp; Pembayaran</h1>
-        <p class="text-xs text-slate-500">Invoice sudah memuat alamat brand &amp; nomor telp brand, siap download PDF. Pembayaran wajib upload bukti.</p>
+        <h1 class="text-xl font-extrabold text-[#0B192C] tracking-tight">Invoice &amp; Pembayaran</h1>
+        <p class="text-xs text-slate-500">Invoice memuat alamat brand &amp; no. telp brand, siap download PDF. Catat bayar cukup input nominal + bukti transfer.</p>
       </div>
-    </div>
 
-    <div class="flex flex-wrap gap-2">
-      ${filters.map(f => `
-        <button onclick="invoiceFilter='${f}'; render()" class="px-3 py-1.5 rounded-lg text-xs font-semibold border ${invoiceFilter === f ? 'bg-[#0B192C] text-white border-[#0B192C]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}">
-          ${f === 'Belum Bayar' ? 'Belum Lunas' : f}
-        </button>
-      `).join('')}
-    </div>
+      <div class="flex flex-wrap gap-2">
+        ${filters.map(f => `
+          <button onclick="invoiceFilter='${f}'; render()" class="px-3 py-1.5 rounded-lg text-xs font-semibold border ${invoiceFilter === f ? 'bg-[#0B192C] text-white border-[#0B192C]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}">
+            ${f === 'Belum Bayar' ? 'Belum Lunas' : f}
+          </button>
+        `).join('')}
+      </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 overflow-x-auto">
-      <table class="w-full text-sm text-left">
-        <thead class="bg-slate-50 text-xs text-slate-500 uppercase border-b border-slate-200">
-          <tr>
-            <th class="px-4 py-2.5">No. Invoice</th>
-            <th class="px-4 py-2.5">Klien &amp; Brand</th>
-            <th class="px-4 py-2.5 text-right">Tagihan</th>
-            <th class="px-4 py-2.5 text-right">Sudah Bayar</th>
-            <th class="px-4 py-2.5 text-right">Sisa</th>
-            <th class="px-4 py-2.5">Evidence (Bukti)</th>
-            <th class="px-4 py-2.5 text-right">Aksi</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100 tabular">
-          ${list.map(c => {
-            const sisa = Math.max(0, c.price - c.paid);
-            return `
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-2.5 font-mono text-xs">${c.noInvoice ? '<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-sans">Tanpa Invoice</span>' : (c.invoiceNo || '<span class="text-slate-400">Belum dibuat</span>')}</td>
-                <td class="px-4 py-2.5 font-semibold">${c.name}<div class="text-xs font-normal text-slate-500">${c.brand} • ${c.service}</div></td>
-                <td class="px-4 py-2.5 text-right">${fmtRp(c.price)}</td>
-                <td class="px-4 py-2.5 text-right text-emerald-700 font-semibold">${fmtRp(c.paid)}</td>
-                <td class="px-4 py-2.5 text-right font-bold ${sisa > 0 ? 'text-rose-700' : 'text-slate-400'}">${fmtRp(sisa)}</td>
-                <td class="px-4 py-2.5 text-xs">
-                  ${c.evidence ? `<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium">✓ ${c.evidence}</span>` : `<span class="text-rose-600">Belum ada bukti</span>`}
-                </td>
-                <td class="px-4 py-2.5 text-right space-x-1 whitespace-nowrap">
-                  ${c.noInvoice
-                    ? `<button onclick="toggleNoInvoice('${c.id}')" class="px-2.5 py-1 rounded border border-slate-300 text-slate-600 text-xs font-medium hover:bg-slate-50">Pakai Invoice</button>`
-                    : `<button onclick="openInvoiceForm('${c.id}')" class="px-2.5 py-1 rounded border border-slate-300 text-xs font-medium hover:bg-slate-50">${c.invoiceNo ? 'Edit' : 'Buat'}</button>
-                       <button onclick="openInvoicePreview('${c.id}')" class="px-2.5 py-1 rounded border border-[#0B192C] text-[#0B192C] text-xs font-semibold hover:bg-slate-50">PDF</button>
-                       ${!c.invoiceNo ? `<button onclick="toggleNoInvoice('${c.id}')" class="px-2 py-1 rounded border border-slate-200 text-slate-500 text-xs hover:bg-slate-50">Tdk Pakai Inv</button>` : ''}`
-                  }
-                  ${sisa > 0 ? `<button onclick="openPayModal('${c.id}')" class="px-2.5 py-1 rounded bg-[#0B192C] text-white text-xs font-medium">Catat Bayar</button>` : ''}
-                </td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-slate-50 text-[11px] text-slate-500 uppercase border-b border-slate-200">
+            <tr>
+              <th class="px-4 py-2.5">No. Invoice</th>
+              <th class="px-4 py-2.5">Klien &amp; Brand</th>
+              <th class="px-4 py-2.5 text-right">Tagihan</th>
+              <th class="px-4 py-2.5 text-right">Sudah Bayar</th>
+              <th class="px-4 py-2.5 text-right">Sisa</th>
+              <th class="px-4 py-2.5">Evidence (Bukti)</th>
+              <th class="px-4 py-2.5 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 tabular">
+            ${list.map(c => {
+              const sisa = Math.max(0, c.price - c.paid);
+              return `
+                <tr class="hover:bg-slate-50">
+                  <td class="px-4 py-2.5 font-mono text-xs">${c.noInvoice ? '<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-sans">Tanpa Invoice</span>' : (c.invoiceNo || '<span class="text-slate-400">Belum dibuat</span>')}</td>
+                  <td class="px-4 py-2.5 font-semibold">${c.name}<div class="text-xs font-normal text-slate-500">${c.brand} • ${c.service}</div></td>
+                  <td class="px-4 py-2.5 text-right">${fmtRp(c.price)}</td>
+                  <td class="px-4 py-2.5 text-right text-emerald-700 font-semibold">${fmtRp(c.paid)}</td>
+                  <td class="px-4 py-2.5 text-right font-bold ${sisa > 0 ? 'text-rose-700' : 'text-slate-400'}">${fmtRp(sisa)}</td>
+                  <td class="px-4 py-2.5 text-xs">
+                    ${c.evidence ? `<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium">✓ ${c.evidence}</span>` : `<span class="text-rose-600">Belum ada bukti</span>`}
+                  </td>
+                  <td class="px-4 py-2.5 text-right space-x-1 whitespace-nowrap">
+                    ${c.noInvoice
+                      ? `<button onclick="toggleNoInvoice('${c.id}')" class="px-2.5 py-1 rounded-lg border border-slate-300 text-slate-600 text-xs font-medium hover:bg-slate-50">Pakai Invoice</button>`
+                      : `<button onclick="openInvoiceForm('${c.id}')" class="px-2.5 py-1 rounded-lg border border-slate-300 text-xs font-medium hover:bg-slate-50">${c.invoiceNo ? 'Edit' : 'Buat'}</button>
+                         <button onclick="openInvoicePreview('${c.id}')" class="px-2.5 py-1 rounded-lg border border-[#0B192C] text-[#0B192C] text-xs font-semibold hover:bg-slate-50">PDF</button>
+                         ${!c.invoiceNo ? `<button onclick="toggleNoInvoice('${c.id}')" class="px-2 py-1 rounded-lg border border-slate-200 text-slate-500 text-xs hover:bg-slate-50">Tdk Pakai Inv</button>` : ''}`
+                    }
+                    ${sisa > 0 ? `<button onclick="openPayModal('${c.id}')" class="px-2.5 py-1 rounded-lg bg-[#0B192C] text-white text-xs font-medium">Catat Bayar</button>` : ''}
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
     </div>
   `;
 }
 
 function renderMitra() {
   return `
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <h1 class="text-xl font-bold text-[#0B192C]">Data Mitra</h1>
-        <p class="text-xs text-slate-500">Daftar mitra dan jumlah klien yang dibawa (tanpa hitung komisi dulu).</p>
+    <div class="animate-in space-y-5">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 class="text-xl font-extrabold text-[#0B192C] tracking-tight">Data Mitra</h1>
+          <p class="text-xs text-slate-500">Kode mitra diinput sesuai database mitra Anda, beserta sumber brand &amp; klien bawaan.</p>
+        </div>
+        <button onclick="openModal('mitraModal')" class="px-4 py-2 rounded-lg bg-[#0B192C] text-white text-sm font-semibold">+ Tambah Mitra</button>
       </div>
-      <button onclick="openModal('mitraModal')" class="px-4 py-2 rounded-lg bg-[#0B192C] text-white text-sm font-semibold">+ Tambah Mitra</button>
-    </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 overflow-x-auto">
-      <table class="w-full text-sm text-left">
-        <thead class="bg-slate-50 text-xs text-slate-500 uppercase border-b border-slate-200">
-          <tr>
-            <th class="px-4 py-2.5">Kode</th>
-            <th class="px-4 py-2.5">Nama Mitra</th>
-            <th class="px-4 py-2.5">Sumber Brand</th>
-            <th class="px-4 py-2.5">No. WA</th>
-            <th class="px-4 py-2.5 text-right">Klien Bawaan</th>
-            <th class="px-4 py-2.5 text-right">Total Uang Masuk</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100 tabular">
-          ${state.mitras.map(m => {
-            const refs = state.clients.filter(c => c.source === 'Mitra' && c.mitraId === m.id);
-            const cash = refs.reduce((s, c) => s + c.paid, 0);
-            return `
-              <tr>
-                <td class="px-4 py-2.5 font-mono text-xs">${m.id}</td>
-                <td class="px-4 py-2.5 font-semibold">${m.name}</td>
-                <td class="px-4 py-2.5 text-xs text-slate-700">${m.brand || '-'}</td>
-                <td class="px-4 py-2.5 text-slate-600">${m.phone || '-'}</td>
-                <td class="px-4 py-2.5 text-right font-semibold">${refs.length} klien</td>
-                <td class="px-4 py-2.5 text-right text-emerald-700 font-semibold">${fmtRp(cash)}</td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-slate-50 text-[11px] text-slate-500 uppercase border-b border-slate-200">
+            <tr>
+              <th class="px-4 py-2.5">Kode</th>
+              <th class="px-4 py-2.5">Nama Mitra</th>
+              <th class="px-4 py-2.5">Sumber Brand</th>
+              <th class="px-4 py-2.5">No. WA</th>
+              <th class="px-4 py-2.5 text-right">Klien Bawaan</th>
+              <th class="px-4 py-2.5 text-right">Total Uang Masuk</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 tabular">
+            ${state.mitras.map(m => {
+              const refs = state.clients.filter(c => c.source === 'Mitra' && c.mitraId === m.id);
+              const cash = refs.reduce((s, c) => s + c.paid, 0);
+              return `
+                <tr class="hover:bg-slate-50">
+                  <td class="px-4 py-2.5 font-mono text-xs">${m.id}</td>
+                  <td class="px-4 py-2.5 font-semibold">${m.name}</td>
+                  <td class="px-4 py-2.5 text-xs text-slate-700">${m.brand || '-'}</td>
+                  <td class="px-4 py-2.5 text-slate-600">${m.phone || '-'}</td>
+                  <td class="px-4 py-2.5 text-right font-semibold">${refs.length} klien</td>
+                  <td class="px-4 py-2.5 text-right text-emerald-700 font-semibold">${fmtRp(cash)}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
     </div>
   `;
 }
 
 function render() {
+  destroyCharts();
   renderNav();
   const main = document.getElementById('mainContent');
-  if (state.tab === 'dashboard') main.innerHTML = renderDashboard();
+  if (state.tab === 'dashboard') {
+    main.innerHTML = renderDashboard();
+    requestAnimationFrame(renderDashboardCharts);
+  }
   else if (state.tab === 'clients') main.innerHTML = renderClients();
   else if (state.tab === 'invoices') main.innerHTML = renderInvoices();
   else main.innerHTML = renderMitra();
@@ -970,6 +1238,7 @@ function saveClient(e) {
   const src = document.getElementById('cSource').value;
   const newC = {
     id: 'ORD-' + String(state.clients.length + 1).padStart(2, '0'),
+    date: daysAgoISO(0),
     name: document.getElementById('cName').value.trim().toUpperCase(),
     phone: document.getElementById('cPhone').value.trim(),
     city: document.getElementById('cCity').value.trim(),
