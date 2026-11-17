@@ -401,7 +401,7 @@ function renderDashboard() {
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 class="text-xl font-bold text-[#0B192C]">Dashboard Ringkas</h1>
-        <p class="text-xs text-slate-500">Pantau uang masuk, uang nyangkut, pengerjaan, dan konversi (patokan: sudah bayar DP/Lunas).</p>
+        <p class="text-xs text-slate-500">Pantau uang masuk, tagihan belum lunas, pengerjaan, dan konversi (patokan: sudah bayar DP/Lunas).</p>
       </div>
       <button onclick="openClientModal()" class="px-4 py-2 rounded-lg bg-[#0B192C] text-white text-sm font-semibold hover:opacity-95">+ Input Klien Baru</button>
     </div>
@@ -414,9 +414,9 @@ function renderDashboard() {
         <div class="text-xs text-slate-500 mt-1">Dari ${converted.length} klien yang sudah bayar</div>
       </div>
       <div class="p-4 bg-rose-50/40">
-        <div class="text-xs font-semibold text-rose-700 uppercase">Uang Nyangkut / Belum Bayar</div>
+        <div class="text-xs font-semibold text-rose-700 uppercase">Tagihan Belum Lunas</div>
         <div class="text-2xl font-extrabold text-rose-700 mt-1 tabular">${fmtRp(totalNyangkut)}</div>
-        <div class="text-xs text-rose-600 mt-1">${stuckClients.length} klien selesai/proses belum lunas</div>
+        <div class="text-xs text-rose-600 mt-1">${stuckClients.length} klien belum bayar / sisa DP</div>
       </div>
       <div class="p-4">
         <div class="text-xs font-semibold text-slate-500 uppercase">Sedang On Proses</div>
@@ -434,8 +434,8 @@ function renderDashboard() {
     <div class="bg-white rounded-xl border border-rose-200 overflow-hidden">
       <div class="px-4 py-3 bg-rose-50 border-b border-rose-200 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 class="font-bold text-sm text-rose-900">Daftar Klien Belum Bayar / Sisa DP (Nyangkut)</h2>
-          <p class="text-xs text-rose-700">Klien yang pekerjaannya sudah jalan/selesai tapi uangnya belum lunas.</p>
+          <h2 class="font-bold text-sm text-rose-900">Daftar Tagihan Belum Lunas (Belum Bayar / Sisa DP)</h2>
+          <p class="text-xs text-rose-700">Klien yang pekerjaannya sudah berjalan/selesai namun pembayarannya belum lunas.</p>
         </div>
         <button onclick="invoiceFilter='Belum Bayar'; switchTab('invoices')" class="text-xs font-semibold text-rose-800 underline">Buka di Menu Invoice →</button>
       </div>
@@ -452,7 +452,7 @@ function renderDashboard() {
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            ${stuckClients.length === 0 ? `<tr><td colspan="6" class="px-4 py-6 text-center text-slate-500">Aman! Tidak ada uang nyangkut.</td></tr>` : stuckClients.map(c => `
+            ${stuckClients.length === 0 ? `<tr><td colspan="6" class="px-4 py-6 text-center text-slate-500">Semua tagihan sudah lunas.</td></tr>` : stuckClients.map(c => `
               <tr class="hover:bg-slate-50">
                 <td class="px-4 py-2.5 font-semibold text-slate-900">${c.name}<div class="text-xs font-normal text-slate-500">${c.phone}</div></td>
                 <td class="px-4 py-2.5">${c.service}<div class="text-xs text-slate-500">${c.brand}</div></td>
@@ -658,7 +658,7 @@ function renderInvoices() {
     <div class="flex flex-wrap gap-2">
       ${filters.map(f => `
         <button onclick="invoiceFilter='${f}'; render()" class="px-3 py-1.5 rounded-lg text-xs font-semibold border ${invoiceFilter === f ? 'bg-[#0B192C] text-white border-[#0B192C]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}">
-          ${f === 'Belum Bayar' ? 'Belum Bayar / Nyangkut' : f}
+          ${f === 'Belum Bayar' ? 'Belum Lunas' : f}
         </button>
       `).join('')}
     </div>
