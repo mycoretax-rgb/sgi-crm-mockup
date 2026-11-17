@@ -230,6 +230,10 @@
       </div>
       <form onsubmit="saveMitra(event)" class="p-5 space-y-3 text-sm">
         <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Kode Mitra *</label>
+          <input id="mCode" required class="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono uppercase" placeholder="Sesuai kode di database mitra" />
+        </div>
+        <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Mitra *</label>
           <input id="mName" required class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="Mis. Pak Hendra (Notaris)" />
         </div>
@@ -257,7 +261,7 @@
   </div>
 
 <script>
-const STORAGE_KEY = 'sgi_crm_mockup_v3_r4';
+const STORAGE_KEY = 'sgi_crm_mockup_v3_r5';
 
 const BRANDS = [
   'Summitech Global Indo',
@@ -271,20 +275,20 @@ const BRANDS = [
 const DEFAULT_DATA = {
   tab: 'dashboard',
   mitras: [
-    { id: 'MTR-01', name: 'Budi Santoso (Konsultan)', brand: 'SGI Indonesia', phone: '08129000111' },
-    { id: 'MTR-02', name: 'Notaris Rina Partner', brand: 'Summitech Global Indo', phone: '08138000222' }
+    { id: 'MITRA-001', name: 'Budi Santoso (Konsultan)', brand: 'SGI Indonesia', phone: '08129000111' },
+    { id: 'MITRA-002', name: 'Notaris Rina Partner', brand: 'Summitech Global Indo', phone: '08138000222' }
   ],
   clients: [
     { id: 'ORD-01', name: 'PT Nusantara Sejahtera (Contoh)', phone: '081211112222', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'PT Perseroan', price: 6500000, paid: 6500000, evidence: 'bukti_tf_01.jpg', workStatus: 'Selesai', invoiceNo: 'INV-202611-001', notes: 'Lunas via BCA' },
-    { id: 'ORD-02', name: 'PT Karya Mandiri (Contoh)', phone: '081233334444', source: 'Mitra', brand: 'SGI Indonesia', mitraId: 'MTR-01', service: 'PT Perseroan', price: 6500000, paid: 3000000, evidence: 'bukti_dp_02.jpg', workStatus: 'On Proses', invoiceNo: 'INV-202611-002', notes: 'Sudah DP 3jt, sisa 3,5jt saat selesai' },
+    { id: 'ORD-02', name: 'PT Karya Mandiri (Contoh)', phone: '081233334444', source: 'Mitra', brand: 'SGI Indonesia', mitraId: 'MITRA-001', service: 'PT Perseroan', price: 6500000, paid: 3000000, evidence: 'bukti_dp_02.jpg', workStatus: 'On Proses', invoiceNo: 'INV-202611-002', notes: 'Sudah DP 3jt, sisa 3,5jt saat selesai' },
     { id: 'ORD-03', name: 'CV Berkah Abadi (Contoh)', phone: '081255556666', source: 'Iklan', brand: 'Legal Express Indonesia', mitraId: '', service: 'CV', price: 4000000, paid: 2000000, evidence: 'bukti_dp_03.jpg', workStatus: 'Selesai', invoiceNo: 'INV-202611-003', notes: 'Kerjaan beres, tinggal tagih pelunasan' },
     { id: 'ORD-04', name: 'Andi Wijaya (Contoh)', phone: '081277778888', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'NPWP Perorangan', price: 500000, paid: 0, evidence: '', workStatus: 'Selesai', invoiceNo: 'INV-202611-004', notes: 'NPWP jadi, klien susah dihubungi!' },
     { id: 'ORD-05', name: 'Toko Sinar Baru (Contoh)', phone: '081299990000', source: 'Iklan', brand: 'Legal Express Indonesia', mitraId: '', service: 'NIB Badan', price: 750000, paid: 0, evidence: '', workStatus: 'Selesai', invoiceNo: 'INV-202611-005', notes: 'NIB terbit, belum transfer' },
-    { id: 'ORD-06', name: 'Yayasan Harapan Bangsa (Contoh)', phone: '081312123434', source: 'Mitra', brand: 'Summitech Global Indo', mitraId: 'MTR-02', service: 'Yayasan', price: 5000000, paid: 5000000, evidence: 'bukti_tf_06.jpg', workStatus: 'Selesai', invoiceNo: 'INV-202611-006', notes: 'Lunas' },
+    { id: 'ORD-06', name: 'Yayasan Harapan Bangsa (Contoh)', phone: '081312123434', source: 'Mitra', brand: 'Summitech Global Indo', mitraId: 'MITRA-002', service: 'Yayasan', price: 5000000, paid: 5000000, evidence: 'bukti_tf_06.jpg', workStatus: 'Selesai', invoiceNo: 'INV-202611-006', notes: 'Lunas' },
     { id: 'ORD-07', name: 'Rudi Hartono (Contoh)', phone: '081345456767', source: 'Iklan', brand: 'SGI Indonesia', mitraId: '', service: 'NPWP Badan', price: 750000, paid: 750000, evidence: 'bukti_tf_07.jpg', workStatus: 'Selesai', invoiceNo: 'INV-202611-007', notes: 'Langsung lunas' },
     { id: 'ORD-08', name: 'Calon Klien A (Contoh)', phone: '081389891010', source: 'Iklan', brand: 'Legalio Business Partners', mitraId: '', service: 'PT Perseroan', price: 6500000, paid: 0, evidence: '', workStatus: 'Prospek', invoiceNo: '', notes: 'Baru tanya-tanya di WA' },
     { id: 'ORD-09', name: 'Calon Klien B (Contoh)', phone: '081311223344', source: 'Iklan', brand: 'Legalitas Pro', mitraId: '', service: 'NIB Badan', price: 750000, paid: 0, evidence: '', workStatus: 'Prospek', invoiceNo: '', notes: 'Belum isi template CS' },
-    { id: 'ORD-10', name: 'Calon Klien C (Contoh)', phone: '081355667788', source: 'Mitra', brand: 'Akura Mokoo Indonesia', mitraId: 'MTR-01', service: 'Virtual Office', price: 3500000, paid: 3500000, evidence: 'bukti_tf_10.jpg', workStatus: 'Selesai', invoiceNo: 'INV-202611-010', notes: 'Lunas 1 tahun' }
+    { id: 'ORD-10', name: 'Calon Klien C (Contoh)', phone: '081355667788', source: 'Mitra', brand: 'Akura Mokoo Indonesia', mitraId: 'MITRA-001', service: 'Virtual Office', price: 3500000, paid: 3500000, evidence: 'bukti_tf_10.jpg', workStatus: 'Selesai', invoiceNo: 'INV-202611-010', notes: 'Lunas 1 tahun' }
   ]
 };
 
@@ -887,17 +891,26 @@ function savePayment(e) {
 
 function saveMitra(e) {
   e.preventDefault();
+  const code = document.getElementById('mCode').value.trim().toUpperCase();
+  if (!code) return;
+  if (state.mitras.some(x => x.id.toUpperCase() === code)) {
+    showToast('Kode mitra ' + code + ' sudah ada!');
+    return;
+  }
   const m = {
-    id: 'MTR-' + String(state.mitras.length + 1).padStart(2, '0'),
+    id: code,
     name: document.getElementById('mName').value.trim(),
     brand: document.getElementById('mBrand').value,
     phone: document.getElementById('mPhone').value.trim()
   };
   state.mitras.push(m);
   saveState();
+  document.getElementById('mCode').value = '';
+  document.getElementById('mName').value = '';
+  document.getElementById('mPhone').value = '';
   closeModal('mitraModal');
   render();
-  showToast('Mitra ' + m.name + ' (' + m.brand + ') ditambahkan');
+  showToast('Mitra ' + m.name + ' (' + m.id + ') ditambahkan');
 }
 
 render();
