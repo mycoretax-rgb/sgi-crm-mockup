@@ -287,19 +287,10 @@
           <div class="text-xs text-slate-600 mt-0.5" id="pClientSummary">-</div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Jenis Bayar</label>
-            <select id="pType" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white">
-              <option value="DP">DP</option>
-              <option value="Pelunasan">Pelunasan</option>
-              <option value="Lunas">Lunas Langsung</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Nominal Masuk (Rp) *</label>
-            <input id="pAmount" type="number" min="1" required class="w-full border border-slate-300 rounded-lg px-3 py-2 tabular" />
-          </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nominal Masuk (Rp) *</label>
+          <input id="pAmount" type="number" min="1" required oninput="updatePayPreview()" class="w-full border border-slate-300 rounded-lg px-3 py-2 tabular font-semibold" />
+          <div id="pAutoStatus" class="text-xs mt-1.5 font-medium"></div>
         </div>
 
         <div>
@@ -523,7 +514,7 @@ function defaultInvMetaFor(c) {
 function payStatusOf(c) {
   if (c.workStatus === 'Batal') return 'Batal';
   if (c.paid >= c.price && c.price > 0) return 'Lunas';
-  if (c.paid > 0) return 'DP';
+  if (c.paid > 0) return 'Sebagian';
   return 'Belum Bayar';
 }
 
@@ -787,7 +778,7 @@ function renderClients() {
         <tbody class="divide-y divide-slate-100">
           ${list.map(c => {
             const ps = payStatusOf(c);
-            const psBadge = ps === 'Lunas' ? 'bg-emerald-50 text-emerald-700' : ps === 'DP' ? 'bg-amber-50 text-amber-800' : ps === 'Batal' ? 'bg-slate-100 text-slate-500' : 'bg-rose-50 text-rose-700';
+            const psBadge = ps === 'Lunas' ? 'bg-emerald-50 text-emerald-700' : ps === 'Sebagian' ? 'bg-amber-50 text-amber-800' : ps === 'Batal' ? 'bg-slate-100 text-slate-500' : 'bg-rose-50 text-rose-700';
             return `
               <tr class="hover:bg-slate-50">
                 <td class="px-4 py-2.5 font-semibold">${c.name}<div class="text-xs font-normal text-slate-500">${c.phone}${c.city ? ' • ' + c.city : ''}</div></td>
@@ -822,12 +813,12 @@ function renderClients() {
 }
 
 function renderInvoices() {
-  const filters = ['Semua', 'Belum Bayar', 'DP', 'Lunas'];
+  const filters = ['Semua', 'Belum Bayar', 'Sebagian', 'Lunas'];
   const list = state.clients.filter(c => {
     if (c.workStatus === 'Batal') return false;
     const ps = payStatusOf(c);
-    if (invoiceFilter === 'Belum Bayar') return ps === 'Belum Bayar' || ps === 'DP';
-    if (invoiceFilter === 'DP') return ps === 'DP';
+    if (invoiceFilter === 'Belum Bayar') return ps === 'Belum Bayar' || ps === 'Sebagian';
+    if (invoiceFilter === 'Sebagian') return ps === 'Sebagian';
     if (invoiceFilter === 'Lunas') return ps === 'Lunas';
     return true;
   });
@@ -1076,7 +1067,7 @@ function openInvoicePreview(id) {
   const meta = c.invMeta || defaultInvMetaFor(c);
   const sisa = Math.max(0, c.price - c.paid);
   const ps = payStatusOf(c);
-  const stampClass = ps === 'Lunas' ? 'border-emerald-600 text-emerald-700 bg-emerald-50' : ps === 'DP' ? 'border-amber-600 text-amber-700 bg-amber-50' : 'border-rose-600 text-rose-700 bg-rose-50';
+  const stampClass = ps === 'Lunas' ? 'border-emerald-600 text-emerald-700 bg-emerald-50' : ps === 'Sebagian' ? 'border-amber-600 text-amber-700 bg-amber-50' : 'border-rose-600 text-rose-700 bg-rose-50';
 
   document.getElementById('invoicePrintArea').innerHTML = `
     <div class="flex flex-wrap justify-between items-start gap-4 border-b-2 border-[#0B192C] pb-4">
@@ -1182,13 +1173,33 @@ function openPayModal(id) {
   document.getElementById('pClientId').value = c.id;
   document.getElementById('pClientName').textContent = c.name + ' (' + c.service + ')';
   document.getElementById('pClientSummary').textContent = `Tagihan ${fmtRp(c.price)} • Sudah bayar ${fmtRp(c.paid)} • Sisa ${fmtRp(sisa)}`;
-  document.getElementById('pType').value = c.paid > 0 ? 'Pelunasan' : (c.price >= 2000000 ? 'DP' : 'Lunas');
-  document.getElementById('pAmount').value = sisa;
+  const amtInput = document.getElementById('pAmount');
+  amtInput.value = sisa;
+  amtInput.max = sisa;
   pendingEvidence = '';
   document.getElementById('pFile').value = '';
   document.getElementById('pEvidencePreview').classList.add('hidden');
   document.getElementById('pEvidenceError').classList.add('hidden');
+  updatePayPreview();
   openModal('payModal');
+}
+
+function updatePayPreview() {
+  const id = document.getElementById('pClientId').value;
+  const c = state.clients.find(x => x.id === id);
+  const el = document.getElementById('pAutoStatus');
+  if (!c || !el) return;
+  const sisa = Math.max(0, c.price - c.paid);
+  const amt = Number(document.getElementById('pAmount').value || 0);
+  if (amt <= 0) {
+    el.innerHTML = '<span class="text-slate-500">Masukkan nominal pembayaran.</span>';
+  } else if (amt > sisa) {
+    el.innerHTML = `<span class="text-rose-600">Nominal melebihi sisa tagihan (${fmtRp(sisa)}).</span>`;
+  } else if (amt === sisa) {
+    el.innerHTML = '<span class="text-emerald-700">✓ Status otomatis menjadi: <strong>Lunas</strong></span>';
+  } else {
+    el.innerHTML = `<span class="text-amber-700">◐ Status otomatis menjadi: <strong>Sebagian</strong> (sisa ${fmtRp(sisa - amt)})</span>`;
+  }
 }
 
 function handleEvidenceFile(input) {
@@ -1219,13 +1230,19 @@ function savePayment(e) {
   const amt = Number(document.getElementById('pAmount').value || 0);
   const c = state.clients.find(x => x.id === id);
   if (!c) return;
+  const sisa = Math.max(0, c.price - c.paid);
+  if (amt <= 0 || amt > sisa) {
+    showToast('Nominal tidak valid (maks ' + fmtRp(sisa) + ')');
+    return;
+  }
   c.paid = Math.min(c.price, c.paid + amt);
   c.evidence = pendingEvidence;
   if (!c.invoiceNo && !c.noInvoice) c.invoiceNo = 'INV-202611-' + String(Math.floor(100 + Math.random() * 900));
   saveState();
   closeModal('payModal');
   render();
-  showToast('Pembayaran ' + fmtRp(amt) + ' tersimpan dengan bukti!');
+  const st = payStatusOf(c);
+  showToast('Pembayaran ' + fmtRp(amt) + ' tersimpan → Status: ' + st);
 }
 
 function saveMitra(e) {
